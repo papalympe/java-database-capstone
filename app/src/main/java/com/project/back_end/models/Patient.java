@@ -2,7 +2,7 @@ package com.project.back_end.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 @Entity
 public class Patient {
@@ -11,19 +11,25 @@ public class Patient {
     private Long id;
 
     @NotNull
+    @Size(min = 3, max = 100)
     private String name;
 
+    @Email
     @NotNull
     private String email;
 
-    @NotNull
+    @Size(min = 6)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
+    @Pattern(regexp = "\\d{10}", message = "Phone number must be 10 digits")
     private String phone;
+
+    @NotNull
+    @Size(max = 255)
     private String address;
 
-    // Getters & Setters
+    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
