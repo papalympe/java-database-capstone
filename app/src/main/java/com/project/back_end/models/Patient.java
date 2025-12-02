@@ -5,100 +5,85 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.*;
+import java.time.LocalDate;
 
 @Entity
 public class Patient {
 
-    // Primary key, auto-incremented
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Patient's full name (required, 3-100 characters)
-    @NotNull(message = "Name cannot be null")
-    @Size(min = 3, max = 100, message = "Name must be between 3 and 100 characters")
+    @NotNull
+    @Size(min = 3, max = 100)
     private String name;
 
-    // Email (required, must be valid email format)
-    @NotNull(message = "Email cannot be null")
-    @Email(message = "Email should be valid")
+    @NotNull
+    @Email
     private String email;
 
-    // Password (required, at least 6 characters)
-    @NotNull(message = "Password cannot be null")
-    @Size(min = 6, message = "Password must be at least 6 characters")
+    @NotNull
+    @Size(min = 6)
     private String password;
 
-    // Phone number (required, exactly 10 digits)
-    @NotNull(message = "Phone number cannot be null")
-    @Pattern(regexp = "\\d{10}", message = "Phone number must be 10 digits")
+    @NotNull
+    @Pattern(regexp = "\\d{10}")
     private String phone;
 
-    // Address (required, max 255 characters)
-    @NotNull(message = "Address cannot be null")
-    @Size(max = 255, message = "Address cannot exceed 255 characters")
+    @NotNull
+    @Size(max = 255)
     private String address;
 
-    // No-argument constructor required by JPA
-    public Patient() {
-    }
+    // Additional fields
+    @Past
+    private LocalDate dateOfBirth;
 
-    // Parameterized constructor
-    public Patient(String name, String email, String password, String phone, String address) {
+    @Pattern(regexp = "\\d{10}", message = "Emergency contact must be 10 digits")
+    private String emergencyContact;
+
+    @Size(max = 100)
+    private String insuranceProvider;
+
+    public Patient() {}
+
+    public Patient(String name, String email, String password, String phone, String address,
+                   LocalDate dateOfBirth, String emergencyContact, String insuranceProvider) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.phone = phone;
         this.address = address;
+        this.dateOfBirth = dateOfBirth;
+        this.emergencyContact = emergencyContact;
+        this.insuranceProvider = insuranceProvider;
     }
 
-    // Getters and setters
+    // Getters and Setters
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
-    public String getEmail() {
-        return email;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
 
-    public String getPassword() {
-        return password;
-    }
+    public LocalDate getDateOfBirth() { return dateOfBirth; }
+    public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public String getEmergencyContact() { return emergencyContact; }
+    public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
 
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
+    public String getInsuranceProvider() { return insuranceProvider; }
+    public void setInsuranceProvider(String insuranceProvider) { this.insuranceProvider = insuranceProvider; }
 }
