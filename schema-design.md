@@ -70,7 +70,7 @@ CREATE TABLE admin (
 );
 ```
 
-### Table: prescriptions (optional link to MongoDB)
+### Table: prescriptions (link to MongoDB)
 ```sql
 CREATE TABLE prescriptions (
   prescription_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique prescription ID
