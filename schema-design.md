@@ -1,123 +1,157 @@
-# 📘 Schema Design for Smart Clinic Management System
+# Schema Design — Smart Clinic Management System
 
-This document is prepared for inclusion in the **java-database-capstone** GitHub repository. It defines both the **MySQL relational schema** and the **MongoDB document schema** used in the Smart Clinic Management System.
-
----
-
-# 🗄️ MySQL Database Schema
-The MySQL database stores structured and relational data such as patients, doctors, appointments, and administrative users.
-
-Below are four core tables with their columns, data types, constraints, and relationships.
+This file describes the data design for the Smart Clinic Management System using **MySQL** for structured data and **MongoDB** for flexible/semi-structured documents. 
 
 ---
 
-## **1. patients Table**
+## MySQL Database Design
+
+### Table: patients
 ```sql
 CREATE TABLE patients (
-    patient_id     INT AUTO_INCREMENT PRIMARY KEY,
-    first_name     VARCHAR(50) NOT NULL,
-    last_name      VARCHAR(50) NOT NULL,
-    email          VARCHAR(100) NOT NULL UNIQUE,
-    phone          VARCHAR(20) NOT NULL,
-    date_of_birth  DATE NOT NULL,
-    created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  patient_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each patient
+  first_name VARCHAR(100) NOT NULL,           -- Patient's first name
+  last_name VARCHAR(100) NOT NULL,            -- Patient's last name
+  email VARCHAR(255) NOT NULL UNIQUE,         -- Unique email for login and contact
+  phone VARCHAR(30) NOT NULL,                 -- Contact phone number
+  gender ENUM('MALE','FEMALE','OTHER') DEFAULT 'OTHER', -- Gender info
+  date_of_birth DATE NOT NULL,                -- Date of birth
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Record creation timestamp
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last update timestamp
+  is_active BOOLEAN DEFAULT TRUE              -- Soft delete flag
 );
 ```
 
----
-
-## **2. doctors Table**
+### Table: doctors
 ```sql
 CREATE TABLE doctors (
-    doctor_id       INT AUTO_INCREMENT PRIMARY KEY,
-    name            VARCHAR(100) NOT NULL,
-    specialization  VARCHAR(100) NOT NULL,
-    email           VARCHAR(100) NOT NULL UNIQUE,
-    phone           VARCHAR(20) NOT NULL,
-    available       BOOLEAN DEFAULT TRUE
+  doctor_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each doctor
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,         -- Unique contact and login email
+  phone VARCHAR(30) NOT NULL,
+  specialization VARCHAR(150) NOT NULL,      -- Medical specialty
+  bio TEXT,                                  -- Optional biography or profile info
+  is_active BOOLEAN DEFAULT TRUE,            -- Soft delete flag
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
----
-
-## **3. appointments Table**
+### Table: appointments
 ```sql
 CREATE TABLE appointments (
-    appointment_id   INT AUTO_INCREMENT PRIMARY KEY,
-    patient_id       INT NOT NULL,
-    doctor_id        INT NOT NULL,
-    appointment_date DATETIME NOT NULL,
-    notes            VARCHAR(255),
-    status           ENUM('SCHEDULED', 'COMPLETED', 'CANCELLED') DEFAULT 'SCHEDULED',
-
-    FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
-    FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id)
+  appointment_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique appointment ID
+  patient_id INT NOT NULL,                          -- Reference to patient
+  doctor_id INT NOT NULL,                           -- Reference to doctor
+  location_id INT,                                  -- Optional location reference
+  appointment_start DATETIME NOT NULL,             -- Start time of appointment
+  appointment_end DATETIME NOT NULL,               -- End time of appointment
+  status ENUM('SCHEDULED','CONFIRMED','COMPLETED','CANCELLED','NO_SHOW') DEFAULT 'SCHEDULED', -- Appointment status
+  reason VARCHAR(255),                               -- Reason for visit
+  created_by VARCHAR(100),                           -- Who created the appointment (patient/admin/staff)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE RESTRICT, -- Prevent deletion if appointments exist
+  FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id) ON DELETE RESTRICT
 );
 ```
 
-> **Justification:** This structure enforces relationships between patients, doctors, and their scheduled visits.
-
----
-
-## **4. admin Table**
+### Table: admin
 ```sql
 CREATE TABLE admin (
-    admin_id      INT AUTO_INCREMENT PRIMARY KEY,
-    username      VARCHAR(50) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    role          VARCHAR(50) NOT NULL
+  admin_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for admin
+  username VARCHAR(100) NOT NULL UNIQUE,    -- Login username
+  password_hash VARCHAR(255) NOT NULL,     -- Hashed password
+  full_name VARCHAR(200),                   -- Full name of admin
+  email VARCHAR(255) NOT NULL UNIQUE,       -- Contact email
+  role VARCHAR(50) NOT NULL,                -- Admin role (e.g., SUPERADMIN, STAFFADMIN)
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Creation timestamp
 );
 ```
 
-> **Justification:** Admin accounts require strong constraints and unique usernames.
+### Table: prescriptions (optional link to MongoDB)
+```sql
+CREATE TABLE prescriptions (
+  prescription_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique prescription ID
+  patient_id INT NOT NULL,                          -- Reference to patient
+  doctor_id INT NOT NULL,                           -- Reference to doctor
+  appointment_id INT,                               -- Optional appointment link
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Creation timestamp
+  FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
+  FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id),
+  FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
+);
+```
 
 ---
 
-# 🍃 MongoDB Collection Schema
-MongoDB stores flexible, document-based data. Items like prescriptions may contain nested arrays and optional attributes that do not fit well into relational tables.
+## MongoDB Collection Design
 
----
+### Collection: prescriptions
+**Design choices:** Store prescriptions as documents because medication lists, dosing instructions, and doctor notes vary per patient. Store references to MySQL IDs (patientId, doctorId) rather than embedding full objects.
 
-## **prescriptions Collection**
-### Example Document
 ```json
 {
+  "_id": { "$oid": "64abc1234567890abcdef123" },
   "prescriptionId": "PR-2025-001",
-  "patientId": 12,
-  "doctorId": 4,
+  "patientId": 12,                  -- Reference to MySQL patients.patient_id
+  "doctorId": 4,                    -- Reference to MySQL doctors.doctor_id
+  "appointmentId": 101,             -- Optional appointment reference
   "createdAt": "2025-01-18T10:45:00Z",
-
+  "createdBy": {
+    "userId": 2001,
+    "role": "DOCTOR",
+    "name": "Dr. Alice Smith"
+  },
   "medications": [
     {
+      "medId": "RX-001",
       "name": "Amoxicillin",
+      "form": "capsule",
       "dosage": "500mg",
-      "frequency": "3 times a day",
-      "duration_days": 7
+      "route": "oral",
+      "frequency": "TID",
+      "duration_days": 7,
+      "instructions": "Take after meals",
+      "quantity": 21
     },
     {
+      "medId": "RX-002",
       "name": "Ibuprofen",
       "dosage": "200mg",
-      "frequency": "as needed",
-      "notes": "Take with food"
+      "frequency": "PRN",
+      "duration_days": 5,
+      "instructions": "If pain persists take twice daily"
     }
   ],
-
-  "doctorNotes": {
-    "symptoms": ["Fever", "Sore throat", "Headache"],
-    "diagnosis": "Bacterial infection",
-    "followUpDate": "2025-01-25"
-  }
+  "notes": {
+    "symptoms": ["Fever", "Sore throat"],
+    "diagnosis": "Acute bacterial pharyngitis",
+    "followUpDays": 7
+  },
+  "status": "ACTIVE",               -- ACTIVE, CANCELLED, EXPIRED
+  "refills": 1,
+  "pharmacy": {
+    "id": "PH-900",
+    "name": "Central Pharmacy",
+    "address": "123 Main St"
+  },
+  "audit": [
+    {
+      "version": 1,
+      "modifiedAt": "2025-01-18T10:45:00Z",
+      "modifiedBy": "doctor:4",
+      "changeNotes": "Initial create"
+    }
+  ],
+  "tags": ["urgent", "antibiotic"]
 }
 ```
 
-> **Justification:** MongoDB allows flexible documents with nested arrays (medications) and objects (doctorNotes), which supports future schema changes without database restructuring.
+**Notes:** MongoDB is used for flexible, nested, or optional data such as medication arrays, doctor notes, and audit history.
 
 ---
-
-# ✅ Summary
-- **MySQL** is used for normalized, structured, and relational data.
-- **MongoDB** is used for flexible, evolving documents.
-- This hybrid approach supports scalability, performance, and maintainability.
 
 
 
