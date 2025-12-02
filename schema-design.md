@@ -62,20 +62,6 @@ CREATE TABLE admin (
 );
 ```
 
-### Table: prescriptions (link to MongoDB)
-```sql
-CREATE TABLE prescriptions (
-  prescription_id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique prescription ID
-  patient_id INT NOT NULL,                          -- Reference to patient
-  doctor_id INT NOT NULL,                           -- Reference to doctor
-  appointment_id INT,                               -- Optional appointment link
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Creation timestamp
-  FOREIGN KEY (patient_id) REFERENCES patients(patient_id),
-  FOREIGN KEY (doctor_id) REFERENCES doctors(doctor_id),
-  FOREIGN KEY (appointment_id) REFERENCES appointments(appointment_id)
-);
-```
-
 ---
 
 ## MongoDB Collection Design
