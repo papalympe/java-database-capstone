@@ -60,7 +60,7 @@ CREATE TABLE admin (
 ## MongoDB Collection Design
 
 ### Collection: prescriptions
-**Design choices:** Store prescriptions as documents because medication lists, dosing instructions, and doctor notes vary per patient. Store references to MySQL IDs (patientId, doctorId) rather than embedding full objects.
+**Design choices:** Store prescriptions as documents because medication, dosing instructions, and doctor notes vary per patient. 
 
 ```json
 {
@@ -74,7 +74,7 @@ CREATE TABLE admin (
 }
 ```
 
-**Notes:** MongoDB is used for flexible, nested, or optional data such as medication arrays, doctor notes, and audit history.
+**Notes:** MongoDB is used for flexible data such as medication, doctor notes, etc.
 
 ---
 
