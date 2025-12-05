@@ -3,12 +3,22 @@
 <html lang="en">
 
 <head>
+    <!-- Metadata -->
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="../assets/images/logo/logo.png" />
+
+    <!-- Page Title -->
     <title>PatientDashboard</title>
+
+    <!-- CSS Files -->
     <link rel="stylesheet" href="../assets/css/adminDashboard.css">
     <link rel="stylesheet" href="../assets/css/style.css">
     <link rel="stylesheet" href="../assets/css/patientDashboard.css">
+
+    <!-- JS Utilities & Components -->
     <script src="../js/render.js" defer></script>
     <script src="../js/util.js" defer></script>
     <script src="../js/components/header.js" defer></script>
@@ -17,17 +27,32 @@
 </head>
 
 <body onload="renderContent()">
+
     <div class="container">
         <div class="wrapper">
+
+            <!-- Header Placeholder -->
             <div id="header"></div>
+
+            <!-- Main Content -->
             <main class="main-content">
-                <input type="text" id="searchBar" class="searchBar" placeholder="Search Bar for custom output" />
+
+                <!-- Search Bar -->
+                <input 
+                    type="text" 
+                    id="searchBar" 
+                    class="searchBar" 
+                    placeholder="Search Bar for custom output" 
+                />
+
+                <!-- Filter Section -->
                 <div class="filter-wrapper">
                     <select class="filter-select" id="filterTime">
                         <option value="">Sort by Time</option>
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
                     </select>
+
                     <select class="filter-select" id="filterSpecialty">
                         <option value="">Filter by Specialty</option>
                         <option value="Cardiologist">Cardiologist</option>
@@ -46,18 +71,28 @@
                         <option value="General">General Physician</option>
                     </select>
                 </div>
+
+                <!-- Dynamic Content Area -->
                 <div id="content"></div>
+
             </main>
+
+            <!-- Footer Placeholder -->
             <div id="footer"></div>
+
         </div>
     </div>
+
+    <!-- Modal -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeModal">&times;</span>
             <div id="modal-body"></div>
         </div>
     </div>
-    <script type="module" src="../js/patientDashboard.js" defer></script>
-</body>
 
+    <!-- Page-Specific Script -->
+    <script type="module" src="../js/patientDashboard.js" defer></script>
+
+</body>
 </html>
