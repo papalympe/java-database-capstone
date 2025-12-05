@@ -1,14 +1,79 @@
-/* This is the style sheet for the patientDashboard.html */
-  .card-actions {
+/* =====================================
+   PATIENT DASHBOARD STYLES
+===================================== */
+
+/* 1. RESET & BASE STYLES */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: Arial, sans-serif;
+}
+
+/* 2. WRAPPER & MAIN CONTENT */
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex-grow: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* 3. SEARCH BAR & FILTERS */
+.searchBar {
+    width: 340px;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    outline: none;
+}
+
+.searchBar:focus {
+    border-color: #015c5d;
+}
+
+.filter-wrapper {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* 4. DOCTOR CARD ACTIONS */
+.card-actions {
     background-color: #244557;
     padding: 10px;
     text-align: center;
-  }
+    border-radius: 8px;
+    transition: background 0.3s;
+}
 
-  .card-actions:hover{
+.card-actions:hover {
     background-color: #1c3745;
-  }
-  .ripple-overlay {
+}
+
+/* 5. RIPPLE EFFECT */
+.ripple-overlay {
     position: fixed;
     width: 20px;
     height: 20px;
@@ -17,64 +82,100 @@
     z-index: 9999;
     transform: translate(-50%, -50%) scale(0);
     transition: transform 1s ease-out, opacity 1s ease;
-  }
-  
-  .ripple-overlay.active {
+}
+
+.ripple-overlay.active {
     transform: translate(-50%, -50%) scale(150);
     opacity: 1;
-  }
-  
-  .modalApp {
-    position: fixed;
-  bottom: -100%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50%;
-  background: #fff;
-  padding: 20px;
-  z-index: 10000;
-  transition: bottom 1.5s ease-in;
-  box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.3);
-  border-radius: 10px 10px 0 0;
-  text-align: center;
-  }
-  
-  .modalApp.active {
-    bottom: 0;
-  }
-  
-  .modalApp h2 {
-    margin-top: 20px;
-  }
-  
-  .modalApp input {
-    display: block;
-    margin: 10px auto;
-    padding: 10px;
-    width: 90%;
-    margin-bottom: 40px;
-  }
+}
 
-  .modalApp select {
+/* 6. BOOKING MODAL */
+.modalApp {
+    position: fixed;
+    bottom: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    background: #fff;
+    padding: 20px;
+    z-index: 10000;
+    transition: bottom 1.5s ease-in;
+    box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.3);
+    border-radius: 10px 10px 0 0;
+    text-align: center;
+}
+
+.modalApp.active {
+    bottom: 0;
+}
+
+.modalApp h2 {
+    margin-top: 20px;
+}
+
+.modalApp input,
+.modalApp select {
     display: block;
     margin: 10px auto;
     padding: 10px;
     width: 90%;
     margin-bottom: 40px;
-  }
-  
-  .confirm-booking {
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+/* 7. CONFIRM BOOKING BUTTON */
+.confirm-booking {
     padding: 10px 20px;
     background: #1c3745;
     color: #fff;
     border: none;
+    border-radius: 6px;
     cursor: pointer;
-    
-  
-    
-  }
-  .confirm-booking:hover {
+    font-size: 16px;
+    transition: filter 0.3s, transform 0.2s;
+}
+
+.confirm-booking:hover {
     filter: brightness(1.2);
-    background-color: #1c3745;
-  }
-  
+}
+
+.confirm-booking:active {
+    transform: scale(0.95);
+}
+
+/* 8. DYNAMIC CONTENT AREA */
+#content {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* 9. RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+    .modalApp {
+        width: 70%;
+    }
+
+    .searchBar {
+        width: 80%;
+    }
+}
+
+@media (max-width: 768px) {
+    .modalApp {
+        width: 90%;
+    }
+
+    .filter-wrapper {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .searchBar {
+        width: 90%;
+    }
+}
