@@ -24,8 +24,10 @@ public class PrescriptionService {
     public ResponseEntity<Map<String, String>> savePrescription(Prescription prescription) {
 
         try {
-            // Check if a prescription already exists for the appointment
-            Prescription existing = prescriptionRepository.findByAppointmentId(prescription.getAppointmentId());
+           // Βρίσκουμε όλες τις συνταγές για την ίδια appointment
+            List<Prescription> existingList = prescriptionRepository.findByAppointmentId(prescription.getAppointmentId());
+
+            Prescription existing = existingList.isEmpty() ? null : existingList.get(0);
 
             if (existing != null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -50,7 +52,8 @@ public class PrescriptionService {
     public ResponseEntity<Map<String, Object>> getPrescription(Long appointmentId) {
 
         try {
-            Prescription prescription = prescriptionRepository.findByAppointmentId(appointmentId);
+            List<Prescription> list = prescriptionRepository.findByAppointmentId(appointmentId);
+            Prescription prescription = list.isEmpty() ? null : list.get(0);;
 
             if (prescription == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
