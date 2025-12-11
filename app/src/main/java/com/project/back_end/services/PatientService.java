@@ -72,7 +72,18 @@ public class PatientService {
         List<Appointment> appointments = appointmentRepository.findByPatientId(id);
 
         List<AppointmentDTO> dtos = appointments.stream()
-                .map(AppointmentDTO::new)
+                .map(a -> new AppointmentDTO(
+                a.getId(),
+                a.getDoctor().getId(),
+                a.getDoctor().getName(),
+                a.getPatient().getId(),
+                a.getPatient().getName(),
+                a.getPatient().getEmail(),
+                a.getPatient().getPhone(),
+                a.getPatient().getAddress(),
+                a.getAppointmentTime(),
+                a.getStatus()
+        ))
                 .collect(Collectors.toList());
 
         Map<String, Object> response = new HashMap<>();
