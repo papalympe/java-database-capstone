@@ -78,7 +78,7 @@ public class ServiceManager {
             result.put("doctors", doctorService.getDoctors());
             return result;
         }
-        result.put("doctors", doctorService.filterDoctorsByNameSpecialtyAndTime(name, specialty, time));
+        result.put("doctors", doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time));
         return result;
     }
 
