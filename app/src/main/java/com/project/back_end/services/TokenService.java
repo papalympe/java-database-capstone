@@ -64,11 +64,11 @@ public class TokenService {
     // -----------------------------------------------------
     public String extractIdentifier(String token) {
         try {
-            Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey())
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
             return claims.getSubject();
         } catch (Exception e) {
             return null; // Invalid token
