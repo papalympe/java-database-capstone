@@ -2,6 +2,7 @@ package com.project.back_end.mvc;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import com.project.back_end.services.ServiceManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -12,7 +13,7 @@ public class DashboardController {
 
     // Autowire the shared service for token validation
     @Autowired
-    private Service service; 
+    private ServiceManager serviceManager; 
 
     /**
      * Admin Dashboard
@@ -21,7 +22,7 @@ public class DashboardController {
     @GetMapping("/adminDashboard/{token}")
     public String adminDashboard(@PathVariable("token") String token) {
         // Validate token for admin role
-        Map<String, Object> validationResult = service.validateToken(token, "admin");
+        Map<String, Object> validationResult = serviceManager.validateToken(token, "admin");
 
         // If the map is empty, the token is valid
         if (validationResult.isEmpty()) {
@@ -38,7 +39,7 @@ public class DashboardController {
     @GetMapping("/doctorDashboard/{token}")
     public String doctorDashboard(@PathVariable("token") String token) {
         // Validate token for doctor role
-        Map<String, Object> validationResult = service.validateToken(token, "doctor");
+        Map<String, Object> validationResult = serviceManager.validateToken(token, "doctor");
 
         // If the map is empty, the token is valid
         if (validationResult.isEmpty()) {
