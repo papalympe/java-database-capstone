@@ -1,5 +1,6 @@
 package com.project.back_end.DTO;
 
+import com.project.back_end.models.Appointment;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -21,6 +22,25 @@ public class AppointmentDTO {
     private LocalDate appointmentDate;
     private LocalTime appointmentTimeOnly;
     private LocalDateTime endTime;
+
+    // Constructor από Appointment αντικείμενο
+    public AppointmentDTO(Appointment appointment) {
+        this.id = appointment.getId();
+        this.doctorId = appointment.getDoctor().getId();
+        this.doctorName = appointment.getDoctor().getName();
+        this.patientId = appointment.getPatient().getId();
+        this.patientName = appointment.getPatient().getName();
+        this.patientEmail = appointment.getPatient().getEmail();
+        this.patientPhone = appointment.getPatient().getPhone();
+        this.patientAddress = appointment.getPatient().getAddress();
+        this.appointmentTime = appointment.getAppointmentTime();
+        this.status = appointment.getStatus();
+
+        // Derived fields
+        this.appointmentDate = appointment.getAppointmentTime().toLocalDate();
+        this.appointmentTimeOnly = appointment.getAppointmentTime().toLocalTime();
+        this.endTime = appointment.getAppointmentTime().plusHours(1);
+    }
 
     // Constructor
     public AppointmentDTO(Long id, Long doctorId, String doctorName,
