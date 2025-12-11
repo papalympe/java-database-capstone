@@ -52,4 +52,13 @@ public class Appointment {
     public void setAppointmentTime(LocalDateTime appointmentTime) { this.appointmentTime = appointmentTime; }
     public int getStatus() { return status; }
     public void setStatus(int status) { this.status = status; }
+
+    // Βοηθητικά getters και setters για enum
+public AppointmentStatus getAppointmentStatus() {
+    return AppointmentStatus.fromCode(this.status);
+}
+
+public void setAppointmentStatus(AppointmentStatus status) {
+    this.status = status.getCode();
+}
 }
