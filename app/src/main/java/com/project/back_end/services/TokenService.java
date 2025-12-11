@@ -91,7 +91,7 @@ public class TokenService {
                     Doctor doctor = doctorRepository.findByEmail(identifier);
                     return doctor != null;
                 case "patient":
-                    Patient patient = patientRepository.findByEmail(identifier);
+                    Patient patient = patientRepository.findByEmail(identifier).orElse(null);
                     return patient != null;
                 default:
                     return false;
