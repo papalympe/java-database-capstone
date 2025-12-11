@@ -8,9 +8,6 @@ import com.project.back_end.models.Doctor;
 import com.project.back_end.repo.AdminRepository;
 import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
-import com.project.back_end.services.DoctorService;
-import com.project.back_end.services.PatientService;
-import com.project.back_end.services.TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -97,15 +94,14 @@ public class ServiceManager {
     // VALIDATE PATIENT (CHECK EXISTENCE)
     // -----------------------------------------------------
     public boolean validatePatient(Patient patient) {
-        Patient existing = patientRepository.findByEmailOrPhone(patient.getEmail(), patient.getPhone());
-        return existing == null;
+        return patientRepository.findByEmailOrPhone(patient.getEmail(), patient.getPhone()).isEmpty();
     }
 
     // -----------------------------------------------------
     // VALIDATE PATIENT LOGIN
     // -----------------------------------------------------
     public ResponseEntity<Map<String, String>> validatePatientLogin(Login login) {
-        Patient patient = patientRepository.findByEmail(login.getIdentifier());
+        Patient patient = patientRepository.findByEmail(login.getIdentifier()).orElse(null);
         if (patient == null || !patient.getPassword().equals(login.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid email or password"));
@@ -124,7 +120,7 @@ public class ServiceManager {
                     .body(Map.of("error", "Invalid token"));
         }
 
-        Patient patient = patientRepository.findByEmail(email);
+        Patient patient = patientRepository.findByEmail(email).orElse(null);
         if (patient == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("error", "Patient not found"));
