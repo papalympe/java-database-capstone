@@ -5,7 +5,7 @@ import com.project.back_end.models.Doctor;
 import com.project.back_end.models.Appointment; 
 import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
-import com.project.back_end.security.TokenService;
+import com.project.back_end.services.TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
