@@ -114,7 +114,7 @@ public class AppointmentService {
         Appointment appointment = opt.get();
 
         // Extract patient ID from token
-        Long tokenUserId = tokenService.extractUserIdFromToken(token);
+        Long tokenUserId = tokenService.extractIdentifier(token);
 
         if (!appointment.getPatient().getId().equals(tokenUserId)) {
             response.put("message", "Unauthorized to cancel this appointment");
@@ -134,7 +134,7 @@ public class AppointmentService {
     public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
         Map<String, Object> result = new HashMap<>();
 
-        Long doctorId = tokenService.extractUserIdFromToken(token);
+        Long doctorId = tokenService.extractIdentifier(token);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
