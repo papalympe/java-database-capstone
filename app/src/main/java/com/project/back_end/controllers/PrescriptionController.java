@@ -1,6 +1,7 @@
 package com.project.back_end.controllers;
 
 import com.project.back_end.models.Prescription;
+import com.project.back_end.models.AppointmentStatus;
 import com.project.back_end.services.AppointmentService;
 import com.project.back_end.services.PrescriptionService;
 import com.project.back_end.services.ServiceManager;
@@ -36,8 +37,12 @@ public class PrescriptionController {
                     .body(Map.of("error", "Unauthorized or invalid token"));
         }
 
-        appointmentService.updateAppointmentStatus(prescription.getAppointmentId(), "Prescription Added");
-
+        // Χρήση enum για status
+        appointmentService.updateAppointmentStatus(
+                prescription.getAppointmentId(),
+                AppointmentStatus.PRESCRIPTION_ADDED
+        );
+        
         return prescriptionService.savePrescription(prescription);
     }
 
