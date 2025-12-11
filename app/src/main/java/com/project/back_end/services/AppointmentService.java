@@ -171,8 +171,13 @@ public class AppointmentService {
     // CHANGE APPOINTMENT STATUS
     // -----------------------------------------------------
     @Transactional
-    public void changeStatus(long id, int status) {
-        appointmentRepository.updateStatus(status, id);
+    public void changeStatus(long id, String status) {
+    Optional<Appointment> opt = appointmentRepository.findById(id);
+    if(opt.isPresent()){
+        Appointment appointment = opt.get();
+        appointment.setStatus(status);
+        appointmentRepository.save(appointment);
     }
+}
 
 }
