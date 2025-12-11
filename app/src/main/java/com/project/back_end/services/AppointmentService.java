@@ -97,6 +97,16 @@ public class AppointmentService {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @Transactional
+    public void updateAppointmentStatus(Long appointmentId, int status) {
+    Optional<Appointment> opt = appointmentRepository.findById(appointmentId);
+    if (opt.isPresent()) {
+        Appointment appointment = opt.get();
+        appointment.setStatus(status); // πρέπει να έχεις field status στο Appointment
+        appointmentRepository.save(appointment);
+    }
+}
+
     // -----------------------------------------------------
     // CANCEL APPOINTMENT
     // -----------------------------------------------------
