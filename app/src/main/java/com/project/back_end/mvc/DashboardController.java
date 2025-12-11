@@ -12,7 +12,7 @@ public class DashboardController {
 
     // Autowire the shared service for token validation
     @Autowired
-    private Service service; // Αντικατάστησε με το πραγματικό όνομα της service class σου
+    private Service service; 
 
     /**
      * Admin Dashboard
