@@ -1,6 +1,7 @@
 package com.project.back_end.services;
 
 import com.project.back_end.models.Appointment;
+import com.project.back_end.models.AppointmentStatus;
 import com.project.back_end.models.Doctor;
 import com.project.back_end.models.Patient;
 import com.project.back_end.repo.AppointmentRepository;
@@ -98,11 +99,11 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void updateAppointmentStatus(Long appointmentId, int status) {
+    public void updateAppointmentStatus(Long appointmentId, AppointmentStatus status) {
     Optional<Appointment> opt = appointmentRepository.findById(appointmentId);
     if (opt.isPresent()) {
         Appointment appointment = opt.get();
-        appointment.setStatus(status); // πρέπει να έχεις field status στο Appointment
+        appointment.setAppointmentStatus(status); 
         appointmentRepository.save(appointment);
     }
 }
