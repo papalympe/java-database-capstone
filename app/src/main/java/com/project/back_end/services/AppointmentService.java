@@ -144,7 +144,9 @@ public class AppointmentService {
     public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
         Map<String, Object> result = new HashMap<>();
 
-        Long doctorId = tokenService.extractIdentifier(token);
+        String identifier = tokenService.extractIdentifier(token);
+        if (identifier == null) return null; // ή κατάλληλο handling
+        Long doctorId = Long.parseLong(identifier);
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
