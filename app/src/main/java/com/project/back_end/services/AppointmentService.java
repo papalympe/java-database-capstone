@@ -188,9 +188,15 @@ public class AppointmentService {
     Optional<Appointment> opt = appointmentRepository.findById(id);
     if(opt.isPresent()){
         Appointment appointment = opt.get();
-        appointment.setStatus(status);
+        AppointmentStatus newStatus;
+        try {
+            newStatus = AppointmentStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid status: " + status);
+        }
+        appointment.setAppointmentStatus(newStatus);
         appointmentRepository.save(appointment);
     }
-}
 
+}
 }
