@@ -47,6 +47,20 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Find all appointments for a specific patient
     List<Appointment> findByPatientId(Long patientId);
 
+    // Find by patientId + status
+    @Query("SELECT a FROM Appointment a WHERE a.patient.id = :patientId AND a.status = :status ORDER BY a.appointmentTime ASC")
+    List<Appointment> findByPatientIdAndStatus(@Param("patientId") Long patientId, @Param("status") int status);
+
+    // Find by doctor name + patient id
+    @Query("SELECT a FROM Appointment a JOIN a.doctor d WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :doctorName, '%')) AND a.patient.id = :patientId")
+    List<Appointment> findByDoctorNameAndPatientId(@Param("doctorName") String doctorName, @Param("patientId") Long patientId);
+
+    // Find by doctor name + patient id + status
+    @Query("SELECT a FROM Appointment a JOIN a.doctor d WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', :doctorName, '%')) AND a.patient.id = :patientId AND a.status = :status")
+    List<Appointment> findByDoctorNameAndPatientIdAndStatus(@Param("doctorName") String doctorName,
+                                                           @Param("patientId") Long patientId,
+                                                           @Param("status") int status);
+
     // Retrieve appointments for a patient by status, ordered by appointment time
     List<Appointment> findByPatient_IdAndStatusOrderByAppointmentTimeAsc(Long patientId, int status);
 
