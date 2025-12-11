@@ -1,5 +1,8 @@
 package com.project.back_end.services;
 
+import com.project.back_end.models.Admin;
+import com.project.back_end.models.Doctor;
+import com.project.back_end.models.Patient;
 import com.project.back_end.repositories.AdminRepository;
 import com.project.back_end.repositories.DoctorRepository;
 import com.project.back_end.repositories.PatientRepository;
@@ -12,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.Optional;
 
 @Component
 public class TokenService {
@@ -34,29 +36,36 @@ public class TokenService {
         this.patientRepository = patientRepository;
     }
 
+    // -----------------------------------------------------
+    // Initialize signing key after bean creation
+    // -----------------------------------------------------
     @PostConstruct
     public void init() {
         this.signingKey = Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
-    // Generate a JWT token for a user
-    public String generateToken(String email) {
+    // -----------------------------------------------------
+    // Generate JWT token for a user identifier
+    // -----------------------------------------------------
+    public String generateToken(String identifier) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + 7L * 24 * 60 * 60 * 1000); // 7 days
 
         return Jwts.builder()
-                .setSubject(email)
+                .setSubject(identifier)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .signWith(signingKey)
+                .signWith(getSigningKey())
                 .compact();
     }
 
-    // Extract email (subject) from a token
-    public String extractEmail(String token) {
+    // -----------------------------------------------------
+    // Extract identifier (subject) from JWT token
+    // -----------------------------------------------------
+    public String extractIdentifier(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(signingKey)
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -66,24 +75,36 @@ public class TokenService {
         }
     }
 
-    // Validate token for a given role
-    public boolean validateToken(String token, String role) {
+    // -----------------------------------------------------
+    // Validate token for a specific user type
+    // -----------------------------------------------------
+    public boolean validateToken(String token, String user) {
         try {
-            String email = extractEmail(token);
-            if (email == null) return false;
+            String identifier = extractIdentifier(token);
+            if (identifier == null) return false;
 
-            switch (role.toLowerCase()) {
+            switch (user.toLowerCase()) {
                 case "admin":
-                    return adminRepository.findByEmail(email).isPresent();
+                    Admin admin = adminRepository.findByUsername(identifier);
+                    return admin != null;
                 case "doctor":
-                    return doctorRepository.findByEmail(email).isPresent();
+                    Doctor doctor = doctorRepository.findByEmail(identifier);
+                    return doctor != null;
                 case "patient":
-                    return patientRepository.findByEmail(email).isPresent();
+                    Patient patient = patientRepository.findByEmail(identifier);
+                    return patient != null;
                 default:
                     return false;
             }
         } catch (Exception e) {
             return false;
         }
+    }
+
+    // -----------------------------------------------------
+    // Get the signing key for JWT
+    // -----------------------------------------------------
+    private SecretKey getSigningKey() {
+        return this.signingKey;
     }
 }
