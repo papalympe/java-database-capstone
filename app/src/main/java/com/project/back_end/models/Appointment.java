@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import com.project.back_end.models.AppointmentStatus;
 
 @Entity
 public class Appointment {
