@@ -2,7 +2,7 @@ package com.project.back_end.controllers;
 
 import com.project.back_end.models.Appointment;
 import com.project.back_end.services.AppointmentService;
-import com.project.back_end.services.Service;
+import com.project.back_end.services.ServiceManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,25 +14,20 @@ import java.util.Map;
 public class AppointmentController {
 
     private final AppointmentService appointmentService;
-    private final Service service;
+    private final ServiceManager serviceManager;
 
-    // Constructor Injection
-    public AppointmentController(AppointmentService appointmentService, Service service) {
+    public AppointmentController(AppointmentService appointmentService, ServiceManager serviceManager) {
         this.appointmentService = appointmentService;
-        this.service = service;
+        this.serviceManager = serviceManager;
     }
 
-    /**
-     * Get Appointments for a doctor on a specific date, optionally filtered by patient name
-     */
     @GetMapping("/{date}/{patientName}/{token}")
     public ResponseEntity<Map<String, Object>> getAppointments(
             @PathVariable String patientName,
             @PathVariable String date,
             @PathVariable String token) {
 
-        // Validate token for doctor role
-        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "doctor");
+        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode()).body(Map.of("error", "Unauthorized or invalid token"));
         }
@@ -42,21 +37,17 @@ public class AppointmentController {
         return ResponseEntity.ok(appointments);
     }
 
-    /**
-     * Book a new appointment
-     */
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, String>> bookAppointment(
             @RequestBody Appointment appointment,
             @PathVariable String token) {
 
-        // Validate token for patient role
-        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "patient");
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode()).body(Map.of("error", "Unauthorized or invalid token"));
         }
 
-        int validation = service.validateAppointment(appointment);
+        int validation = serviceManager.validateAppointment(appointment);
         if (validation == -1) {
             return ResponseEntity.badRequest().body(Map.of("error", "Doctor does not exist"));
         } else if (validation == 0) {
@@ -71,16 +62,12 @@ public class AppointmentController {
         }
     }
 
-    /**
-     * Update an existing appointment
-     */
     @PutMapping("/{token}")
     public ResponseEntity<Map<String, String>> updateAppointment(
             @RequestBody Appointment appointment,
             @PathVariable String token) {
 
-        // Validate token for patient role
-        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "patient");
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode()).body(Map.of("error", "Unauthorized or invalid token"));
         }
@@ -88,16 +75,12 @@ public class AppointmentController {
         return appointmentService.updateAppointment(appointment);
     }
 
-    /**
-     * Cancel an appointment
-     */
     @DeleteMapping("/{id}/{token}")
     public ResponseEntity<Map<String, String>> cancelAppointment(
             @PathVariable Long id,
             @PathVariable String token) {
 
-        // Validate token for patient role
-        ResponseEntity<Map<String, String>> tokenValidation = service.validateToken(token, "patient");
+        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "patient");
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode()).body(Map.of("error", "Unauthorized or invalid token"));
         }
@@ -105,4 +88,3 @@ public class AppointmentController {
         return appointmentService.cancelAppointment(id, token);
     }
 }
-
