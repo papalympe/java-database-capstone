@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class ServiceManager {
+public class Service {
 
     private final TokenService tokenService;
     private final AdminRepository adminRepository;
@@ -26,7 +26,7 @@ public class ServiceManager {
     private final DoctorService doctorService;
     private final PatientService patientService;
 
-    public ServiceManager(TokenService tokenService,
+    public Service(TokenService tokenService,
                           AdminRepository adminRepository,
                           DoctorRepository doctorRepository,
                           PatientRepository patientRepository,
@@ -60,7 +60,6 @@ public class ServiceManager {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid username or password"));
         }
-
         String token = tokenService.generateToken(admin.getUsername());
         return ResponseEntity.ok(Map.of("token", token));
     }
@@ -70,11 +69,13 @@ public class ServiceManager {
     // -----------------------------------------------------
     public Map<String, Object> filterDoctor(String name, String specialty, String time) {
         Map<String, Object> result = new HashMap<>();
-        if ((name == null || name.isEmpty()) && (specialty == null || specialty.isEmpty()) && (time == null || time.isEmpty())) {
+        if ((name == null || name.isEmpty()) &&
+            (specialty == null || specialty.isEmpty()) &&
+            (time == null || time.isEmpty())) {
             result.put("doctors", doctorService.getDoctors());
             return result;
         }
-        result.put("doctors", doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time));
+        result.put("doctors", doctorService.filterDoctorsByNameSpecialtyAndTime(name, specialty, time));
         return result;
     }
 
@@ -82,15 +83,11 @@ public class ServiceManager {
     // VALIDATE APPOINTMENT
     // -----------------------------------------------------
     public int validateAppointment(Appointment appointment) {
-        Doctor doctor = doctorRepository.findById(appointment.getDoctorId()).orElse(null);
+        Doctor doctor = doctorRepository.findById(appointment.getDoctor().getId()).orElse(null);
         if (doctor == null) return -1;
 
         List<String> available = doctorService.getDoctorAvailability(doctor.getId(), appointment.getAppointmentTime().toLocalDate());
-        if (available.contains(appointment.getAppointmentTime().toLocalTime().toString())) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return available.contains(appointment.getAppointmentTime().toLocalTime().toString()) ? 1 : 0;
     }
 
     // -----------------------------------------------------
@@ -123,6 +120,7 @@ public class ServiceManager {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid token"));
         }
+
         Patient patient = patientRepository.findByEmail(email);
         if (patient == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
