@@ -8,7 +8,6 @@ import com.project.back_end.models.Doctor;
 import com.project.back_end.repo.AdminRepository;
 import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.repo.PatientRepository;
-import com.project.back_end.services.TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class Service {
+public class ServiceManager {
 
     private final TokenService tokenService;
     private final AdminRepository adminRepository;
@@ -27,7 +26,7 @@ public class Service {
     private final DoctorService doctorService;
     private final PatientService patientService;
 
-    public Service(TokenService tokenService,
+    public ServiceManager(TokenService tokenService,
                           AdminRepository adminRepository,
                           DoctorRepository doctorRepository,
                           PatientRepository patientRepository,
