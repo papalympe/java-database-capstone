@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 public interface PatientRepository extends JpaRepository<Patient, Long> {
 
     // Find a patient by email
-    Patient findByEmail(String email);
+    Optional<Patient> patientOpt = Optional.ofNullable(patientRepository.findByEmail(email));
 
     // Find a patient by email or phone
-    Patient findByEmailOrPhone(String email, String phone);
+    Optional<Patient> findByEmailOrPhone(String email, String phone);
 }
