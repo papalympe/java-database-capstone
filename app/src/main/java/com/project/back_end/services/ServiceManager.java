@@ -118,7 +118,7 @@ public class ServiceManager {
     // FILTER PATIENT APPOINTMENTS
     // -----------------------------------------------------
     public ResponseEntity<Map<String, Object>> filterPatient(String condition, String name, String token) {
-        String email = tokenService.extractEmail(token);
+        String email = tokenService.extractIdentifier(token);
         if (email == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", "Invalid token"));
