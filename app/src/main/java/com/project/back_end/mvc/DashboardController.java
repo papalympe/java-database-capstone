@@ -22,13 +22,13 @@ public class DashboardController {
     @GetMapping("/adminDashboard/{token}")
     public String adminDashboard(@PathVariable("token") String token) {
         // Validate token for admin role
-        Map<String, Object> validationResult = serviceManager.validateToken(token, "admin");
-
+        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "admin");
+        
         // If the map is empty, the token is valid
-        if (validationResult.isEmpty()) {
-            return "admin/adminDashboard"; // Thymeleaf template
+        if (tokenValidation.getStatusCode().is2xxSuccessful()) {
+            return "admin/adminDashboard";
         } else {
-            return "redirect:/"; // Redirect to login or home page
+            return "redirect:/";
         }
     }
 
@@ -39,13 +39,13 @@ public class DashboardController {
     @GetMapping("/doctorDashboard/{token}")
     public String doctorDashboard(@PathVariable("token") String token) {
         // Validate token for doctor role
-        Map<String, Object> validationResult = serviceManager.validateToken(token, "doctor");
+        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
 
         // If the map is empty, the token is valid
-        if (validationResult.isEmpty()) {
-            return "doctor/doctorDashboard"; // Thymeleaf template
+        if (tokenValidation.getStatusCode().is2xxSuccessful()) {
+            return "doctor/doctorDashboard";
         } else {
-            return "redirect:/"; // Redirect to login or home page
+            return "redirect:/";
         }
     }
 }
