@@ -124,7 +124,14 @@ public class AppointmentService {
         Appointment appointment = opt.get();
 
         // Extract patient ID from token
-        Long tokenUserId = tokenService.extractIdentifier(token);
+         String identifier = tokenService.extractIdentifier(token);
+         Long tokenUserId = null;
+        try {
+            tokenUserId = Long.parseLong(identifier);
+        } catch (NumberFormatException e) {
+            // χειρισμός invalid id
+        return null;
+        }
 
         if (!appointment.getPatient().getId().equals(tokenUserId)) {
             response.put("message", "Unauthorized to cancel this appointment");
@@ -145,8 +152,13 @@ public class AppointmentService {
         Map<String, Object> result = new HashMap<>();
 
         String identifier = tokenService.extractIdentifier(token);
-        if (identifier == null) return null; // ή κατάλληλο handling
-        Long doctorId = Long.parseLong(identifier);
+        Long doctorId = null;
+        try {
+            doctorId = Long.parseLong(identifier);
+        } catch (NumberFormatException e) {
+            // χειρισμός invalid id
+        return null;
+        }
 
         LocalDateTime startOfDay = date.atStartOfDay();
         LocalDateTime endOfDay = startOfDay.plusDays(1);
