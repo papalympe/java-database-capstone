@@ -159,7 +159,7 @@ public class DoctorService {
         }
 
         // Generate token (assumes tokenService has this method)
-        String token = tokenService.generateToken(doctor);
+        String token = tokenService.generateToken(doctor.getEmail());
         resp.put("token", token);
         resp.put("message", "Login successful");
         return new ResponseEntity<>(resp, HttpStatus.OK);
