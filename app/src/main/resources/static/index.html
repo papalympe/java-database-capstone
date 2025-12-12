@@ -1,4 +1,4 @@
-<!-- index.html -->
+<!-- index.html (fixed) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,10 +15,10 @@
     <script src="/js/util.js" defer></script>
     <script src="/js/render.js" defer></script>
     
-    <!-- JS Components -->
+    <!-- JS Components (only non-module components: keep if they are not ES modules) -->
     <script src="/js/components/header.js" defer></script>
     <script src="/js/components/footer.js" defer></script>
-    <script src="/js/components/modals.js" defer></script>
+    <!-- DO NOT include /js/components/modals.js HERE as a normal script (it is an ES module) -->
 </head>
 <body>
     <div class="container">
@@ -51,7 +51,7 @@
         </div>
     </div>
     
-    <!-- Page-Specific JS (entrypoint) -->
+    <!-- Page-Specific JS (entrypoint - module) -->
     <script type="module" src="/js/services/index.js" defer></script>
 </body>
 </html>
