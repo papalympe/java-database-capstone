@@ -1,6 +1,4 @@
-// index.js
-
-// Import required modules
+// /js/services/index.js  (module entrypoint)
 import { openModal } from '../components/modals.js';
 import { API_BASE_URL } from '../config/config.js';
 
@@ -8,49 +6,61 @@ import { API_BASE_URL } from '../config/config.js';
 const ADMIN_API = API_BASE_URL + '/admin';
 const DOCTOR_API = API_BASE_URL + '/doctor/login';
 
-// Ensure DOM elements are loaded
-window.onload = function () {
-    // Select login buttons
-    const adminBtn = document.getElementById('adminLogin');
-    const doctorBtn = document.getElementById('doctorLogin');
-
-    // Attach click listeners
-    if (adminBtn) {
-        adminBtn.addEventListener('click', () => {
+// --- Expose a global wrapper used by inline onclick in index.html ---
+window.openRoleModal = function(role) {
+    // map simple role names to modal types used inside modals.js
+    switch ((role || '').toLowerCase()) {
+        case 'admin':
             openModal('adminLogin');
-        });
-    }
-
-    if (doctorBtn) {
-        doctorBtn.addEventListener('click', () => {
+            break;
+        case 'doctor':
             openModal('doctorLogin');
-        });
+            break;
+        case 'patient':
+            // you may prefer to show login or signup - here we show login
+            openModal('patientLogin');
+            break;
+        default:
+            console.warn('Unknown role for modal:', role);
+            openModal('patientLogin');
     }
 };
 
-// Admin login handler
+// Optionally attach listeners to the top-level buttons (redundant if using onclick)
+document.addEventListener('DOMContentLoaded', () => {
+    const adminBtn = document.getElementById('adminBtn');
+    const doctorBtn = document.getElementById('doctorBtn');
+    const patientBtn = document.getElementById('patientBtn');
+
+    if (adminBtn) adminBtn.addEventListener('click', () => window.openRoleModal('admin'));
+    if (doctorBtn) doctorBtn.addEventListener('click', () => window.openRoleModal('doctor'));
+    if (patientBtn) patientBtn.addEventListener('click', () => window.openRoleModal('patient'));
+});
+
+// ------------------- Handlers -------------------
+// NOTE: These handlers must match the input IDs used inside the modal HTML in modals.js
+
+// Admin login handler - using modal ids 'username' and 'password' (per modals.js)
 window.adminLoginHandler = async function () {
     try {
-        // Step 1: Get input values
-        const username = document.getElementById('adminUsername').value.trim();
-        const password = document.getElementById('adminPassword').value.trim();
+        const usernameEl = document.getElementById('username');
+        const passwordEl = document.getElementById('password');
+        const username = usernameEl ? usernameEl.value.trim() : '';
+        const password = passwordEl ? passwordEl.value.trim() : '';
 
         if (!username || !password) {
             alert('Please enter both username and password.');
             return;
         }
 
-        // Step 2: Create admin object
         const admin = { username, password };
 
-        // Step 3: Send POST request
-        const response = await fetch(ADMIN_API, {
+        const response = await fetch(ADMIN_API + '/login', { // ensure correct backend path
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(admin)
         });
 
-        // Step 4: Handle response
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('token', data.token);
@@ -64,29 +74,29 @@ window.adminLoginHandler = async function () {
     }
 };
 
-// Doctor login handler
+// Doctor login handler - modal uses ids 'email' & 'password'
 window.doctorLoginHandler = async function () {
     try {
-        // Step 1: Get input values
-        const email = document.getElementById('doctorEmail').value.trim();
-        const password = document.getElementById('doctorPassword').value.trim();
+        const emailEl = document.getElementById('email');
+        const passwordEl = document.getElementById('password');
+        const email = emailEl ? emailEl.value.trim() : '';
+        const password = passwordEl ? passwordEl.value.trim() : '';
 
         if (!email || !password) {
             alert('Please enter both email and password.');
             return;
         }
 
-        // Step 2: Create doctor object
-        const doctor = { email, password };
+        const doctor = { identifier: email, password }; // if backend expects identifier OR {email,password}
+        // adjust payload to your backend contract: earlier you used Login DTO with 'identifier'
+        const payload = { identifier: email, password };
 
-        // Step 3: Send POST request
         const response = await fetch(DOCTOR_API, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(doctor)
+            body: JSON.stringify(payload)
         });
 
-        // Step 4: Handle response
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('token', data.token);
@@ -100,9 +110,15 @@ window.doctorLoginHandler = async function () {
     }
 };
 
-// Helper function (assumes it's defined in render.js)
+// Helper selectRole
 function selectRole(role) {
     localStorage.setItem('role', role);
     // Redirect or render pages based on role
-    window.location.href = role === 'admin' ? '/admin/dashboard.html' : '/doctor/dashboard.html';
+    if (role === 'admin') {
+        window.location.href = '/templates/admin/adminDashboard.html';
+    } else if (role === 'doctor') {
+        window.location.href = '/templates/doctor/doctorDashboard.html';
+    } else {
+        window.location.href = '/';
+    }
 }
