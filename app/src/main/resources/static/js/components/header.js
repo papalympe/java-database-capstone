@@ -111,3 +111,15 @@ function logoutPatient() {
 // Initialize Header Rendering
 // ================================
 document.addEventListener("DOMContentLoaded", renderHeader);
+
+// ================================
+// Apply role-based background
+// ================================
+document.addEventListener("DOMContentLoaded", () => {
+  const role = localStorage.getItem("userRole");
+
+  if (role === "admin" || role === "doctor" || role === "patient") {
+    document.body.classList.add("role-bg");
+  }
+});
+
