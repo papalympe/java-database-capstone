@@ -380,3 +380,33 @@
   accent-color: #015c5db8; 
 }
 
+/* ===========================
+   GLOBAL ROLE BACKGROUND
+=========================== */
+
+.role-bg {
+  background-image: url('/assets/images/logo/logo.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* soft overlay for readability */
+.role-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6); /* tweak opacity */
+  z-index: 0;
+}
+
+/* ensure content is above overlay */
+.role-bg > * {
+  position: relative;
+  z-index: 1;
+}
+
+
