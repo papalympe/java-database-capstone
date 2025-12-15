@@ -115,9 +115,9 @@ function selectRole(role) {
     localStorage.setItem('role', role);
     // Redirect or render pages based on role
     if (role === 'admin') {
-        window.location.href = '/templates/admin/adminDashboard.html';
+        window.location.href = '/pages/adminDashboard.html';
     } else if (role === 'doctor') {
-        window.location.href = '/templates/doctor/doctorDashboard.html';
+        window.location.href = '/pages/doctorDashboard.html';
     } else {
         window.location.href = '/';
     }
