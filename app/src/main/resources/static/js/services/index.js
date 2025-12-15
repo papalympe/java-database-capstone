@@ -110,6 +110,77 @@ window.doctorLoginHandler = async function () {
     }
 };
 
+
+// ------------------- Patient Signup -------------------
+window.signupPatient = async function () {
+    try {
+        const payload = {
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            password: document.getElementById("password").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            address: document.getElementById("address").value.trim(),
+            gender: "MALE"
+        };
+
+        const response = await fetch(API_BASE_URL + '/patient', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            alert("Signup failed");
+            return;
+        }
+
+        alert("Signup successful! Please login.");
+        document.getElementById('modal').style.display = 'none';
+
+    } catch (err) {
+        console.error("Signup error:", err);
+        alert("Signup error");
+    }
+};
+
+// ------------------- Patient Login -------------------
+window.loginPatient = async function () {
+    try {
+        const emailEl = document.getElementById('email');
+        const passwordEl = document.getElementById('password');
+
+        const email = emailEl ? emailEl.value.trim() : '';
+        const password = passwordEl ? passwordEl.value.trim() : '';
+
+        if (!email || !password) {
+            alert('Please enter email and password');
+            return;
+        }
+
+        const response = await fetch(API_BASE_URL + '/patient/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+
+        if (!response.ok) {
+            alert('Invalid credentials');
+            return;
+        }
+
+        const data = await response.json();
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', 'patient');
+
+        window.location.href = '/pages/patientDashboard.html';
+
+    } catch (err) {
+        console.error('Patient login error:', err);
+        alert('Login failed');
+    }
+};
+
+
 // Helper selectRole
 function selectRole(role) {
     localStorage.setItem('role', role);
