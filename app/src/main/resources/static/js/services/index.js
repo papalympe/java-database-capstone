@@ -155,3 +155,8 @@ window.loginPatient = async function () {
     alert('Login failed');
   }
 };
+  // Export default optionally
+export default {
+  openRoleModal,
+};
+
