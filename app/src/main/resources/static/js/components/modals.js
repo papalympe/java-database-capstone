@@ -1,6 +1,4 @@
-// js/components/modals.js
-// Εξάγω την openModal ως ES module function
-
+// /js/components/modals.js
 function ensureModalExists() {
   if (document.getElementById("modal")) return;
 
@@ -105,8 +103,8 @@ export function openModal(type) {
     modal.style.display = "none";
     modal.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
-    // remove keydown listener
     window.removeEventListener("keydown", escHandler);
+    modal.removeEventListener("click", outsideClickHandler);
   };
 
   const escHandler = (e) => {
@@ -118,13 +116,11 @@ export function openModal(type) {
     if (e.target === modal) closeModal();
   };
 
-  // Attach close listeners
   closeBtn.onclick = closeModal;
   modal.addEventListener("click", outsideClickHandler);
   window.addEventListener("keydown", escHandler);
 
   // ---- Wire action buttons to globals safely ----
-  // If the global handler exists call it; otherwise warn.
   const safeBind = (selector, handlerName) => {
     const btn = modalBody.querySelector(selector);
     if (!btn) return;
@@ -132,7 +128,6 @@ export function openModal(type) {
       ev.preventDefault();
       if (typeof window[handlerName] === "function") {
         try {
-          // call the global handler; keep modal open/close behavior to handler
           window[handlerName]();
         } catch (err) {
           console.error(`${handlerName} threw:`, err);
@@ -155,3 +150,9 @@ export function openModal(type) {
 
   console.log("modal opened:", type);
 }
+
+// Make openModal available to legacy / non-module code (inline onclicks etc.)
+if (typeof window !== "undefined") window.openModal = openModal;
+
+// default export
+export default openModal;
