@@ -30,9 +30,9 @@
             <main class="main-content">
                 <h2>Select Your Role</h2>
                 <div class="role-buttons">
-                    <button id="adminBtn" onclick="openRoleModal('admin')">Admin</button>
-                    <button id="doctorBtn" onclick="openRoleModal('doctor')">Doctor</button>
-                    <button id="patientBtn" onclick="openRoleModal('patient')">Patient</button>
+                    <button id="adminBtn">Admin</button>
+                    <button id="doctorBtn">Doctor</button>
+                    <button id="patientBtn">Patient</button>
                 </div>
             </main>
             
@@ -53,5 +53,6 @@
     
     <!-- Page-Specific JS (entrypoint - module) -->
     <script type="module" src="/js/services/index.js" defer></script>
+    <script type="module" src="/js/initRoleButtons.js" defer></script>
 </body>
 </html>
