@@ -1,208 +1,163 @@
-// /js/services/index.js  (module entrypoint)
+// /js/services/index.js
 import { openModal } from '../components/modals.js';
 import { API_BASE_URL } from '../config/config.js';
 
-// Define API endpoints
 const ADMIN_API = API_BASE_URL + '/admin';
 const DOCTOR_API = API_BASE_URL + '/doctor/login';
 
-// --- Expose a global wrapper used by inline onclick in index.html ---
-window.openRoleModal = function(role) {
-    // map simple role names to modal types used inside modals.js
-    switch ((role || '').toLowerCase()) {
-        case 'admin':
-            openModal('adminLogin');
-            break;
-        case 'doctor':
-            openModal('doctorLogin');
-            break;
-        case 'patient':
-            // you may prefer to show login or signup - here we show login
-            openModal('patientLogin');
-            break;
-        default:
-            console.warn('Unknown role for modal:', role);
-            openModal('patientLogin');
-    }
-};
-
-// Optionally attach listeners to the top-level buttons (redundant if using onclick)
-document.addEventListener('DOMContentLoaded', () => {
-    const adminBtn = document.getElementById('adminBtn');
-    const doctorBtn = document.getElementById('doctorBtn');
-    const patientBtn = document.getElementById('patientBtn');
-
-    if (adminBtn) adminBtn.addEventListener('click', () => window.openRoleModal('admin'));
-    if (doctorBtn) doctorBtn.addEventListener('click', () => window.openRoleModal('doctor'));
-    if (patientBtn) patientBtn.addEventListener('click', () => window.openRoleModal('patient'));
-});
-
-// ------------------- Handlers -------------------
-// NOTE: These handlers must match the input IDs used inside the modal HTML in modals.js
-
-// Admin login handler - using modal ids 'username' and 'password' (per modals.js)
-window.adminLoginHandler = async function () {
-  try {
-    const username = document.getElementById('username')?.value?.trim() || '';
-    const password = document.getElementById('password')?.value?.trim() || '';
-
-    if (!username || !password) {
-      alert('Please enter both username and password.');
-      return;
-    }
-
-    const admin = { username, password };
-
-    const response = await fetch(ADMIN_API + '/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(admin)
-    });
-
-    if (!response.ok) {
-      alert('Invalid credentials!');
-      return;
-    }
-
-    const data = await response.json();
-
-    // Save token & canonical role BEFORE navigation
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('userRole', 'admin');
-
-    // Navigate once, using the returned token
-    window.location.href = `/adminDashboard/${data.token}`;
-
-  } catch (error) {
-    console.error('Admin login error:', error);
-    alert('Something went wrong. Please try again.');
+/* ===============================
+   ROLE MODAL ENTRY POINT
+================================ */
+window.openRoleModal = function (role) {
+  switch ((role || '').toLowerCase()) {
+    case 'admin':
+      openModal('adminLogin');
+      break;
+    case 'doctor':
+      openModal('doctorLogin');
+      break;
+    case 'patient':
+      openModal('patientLogin');
+      break;
+    default:
+      openModal('patientLogin');
   }
 };
 
-// Doctor login handler - modal uses ids 'email' & 'password'
-window.doctorLoginHandler = async function () {
+/* ===============================
+   ADMIN LOGIN
+================================ */
+window.adminLoginHandler = async function () {
   try {
-    const email = document.getElementById('email')?.value?.trim() || '';
-    const password = document.getElementById('password')?.value?.trim() || '';
+    const username = document.getElementById('username')?.value.trim();
+    const password = document.getElementById('password')?.value.trim();
 
-    if (!email || !password) {
-      alert('Please enter both email and password.');
+    if (!username || !password) {
+      alert('Please enter username and password');
       return;
     }
 
-    const payload = { identifier: email, password };
+    const res = await fetch(`${ADMIN_API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
 
-    const response = await fetch(DOCTOR_API, {
+    if (!res.ok) {
+      alert('Invalid credentials');
+      return;
+    }
+
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', 'admin');
+
+    window.location.href = `/adminDashboard/${data.token}`;
+  } catch (e) {
+    console.error(e);
+    alert('Admin login failed');
+  }
+};
+
+/* ===============================
+   DOCTOR LOGIN
+================================ */
+window.doctorLoginHandler = async function () {
+  try {
+    const email = document.getElementById('email')?.value.trim();
+    const password = document.getElementById('password')?.value.trim();
+
+    if (!email || !password) {
+      alert('Please enter email and password');
+      return;
+    }
+
+    const res = await fetch(DOCTOR_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: email, password })
+    });
+
+    if (!res.ok) {
+      alert('Invalid credentials');
+      return;
+    }
+
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', 'doctor');
+
+    window.location.href = `/doctorDashboard/${data.token}`;
+  } catch (e) {
+    console.error(e);
+    alert('Doctor login failed');
+  }
+};
+
+/* ===============================
+   PATIENT SIGNUP
+================================ */
+window.signupPatient = async function () {
+  try {
+    const payload = {
+      name: document.getElementById("name")?.value.trim(),
+      email: document.getElementById("email")?.value.trim(),
+      password: document.getElementById("password")?.value.trim(),
+      phone: document.getElementById("phone")?.value.trim(),
+      address: document.getElementById("address")?.value.trim(),
+      gender: "MALE"
+    };
+
+    const res = await fetch(`${API_BASE_URL}/patient`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    if (!response.ok) {
-      alert('Invalid credentials!');
+    if (!res.ok) {
+      alert('Signup failed');
       return;
     }
 
-    const data = await response.json();
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('userRole', 'doctor');
-
-    window.location.href = `/doctorDashboard/${data.token}`;
-
-  } catch (error) {
-    console.error('Doctor login error:', error);
-    alert('Something went wrong. Please try again.');
+    alert('Signup successful');
+    document.getElementById('modal').style.display = 'none';
+  } catch (e) {
+    console.error(e);
+    alert('Signup error');
   }
 };
 
-
-
-// ------------------- Patient Signup -------------------
-window.signupPatient = async function () {
-    try {
-        const payload = {
-            name: document.getElementById("name").value.trim(),
-            email: document.getElementById("email").value.trim(),
-            password: document.getElementById("password").value.trim(),
-            phone: document.getElementById("phone").value.trim(),
-            address: document.getElementById("address").value.trim(),
-            gender: "MALE"
-        };
-
-        const response = await fetch(API_BASE_URL + '/patient', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            alert("Signup failed");
-            return;
-        }
-
-        alert("Signup successful! Please login.");
-        document.getElementById('modal').style.display = 'none';
-
-    } catch (err) {
-        console.error("Signup error:", err);
-        alert("Signup error");
-    }
-};
-
-// ------------------- Patient Login -------------------
+/* ===============================
+   PATIENT LOGIN
+================================ */
 window.loginPatient = async function () {
-    try {
-        const emailEl = document.getElementById('email');
-        const passwordEl = document.getElementById('password');
+  try {
+    const email = document.getElementById('email')?.value.trim();
+    const password = document.getElementById('password')?.value.trim();
 
-        const email = emailEl ? emailEl.value.trim() : '';
-        const password = passwordEl ? passwordEl.value.trim() : '';
-
-        if (!email || !password) {
-            alert('Please enter email and password');
-            return;
-        }
-
-        const response = await fetch(API_BASE_URL + '/patient/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        if (!response.ok) {
-            alert('Invalid credentials');
-            return;
-        }
-
-        const data = await response.json();
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userRole', 'patient');
-
-        window.location.href = '/pages/patientDashboard.html';
-
-    } catch (err) {
-        console.error('Patient login error:', err);
-        alert('Login failed');
+    if (!email || !password) {
+      alert('Please enter email and password');
+      return;
     }
-};
 
+    const res = await fetch(`${API_BASE_URL}/patient/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
 
-// Helper selectRole
-function selectRole(role) {
-  // canonical key = "userRole"
-  localStorage.setItem('userRole', role);
-  // redirect
-  if (role === 'admin') {
-    // ensure token already stored by login handler
-    const token = localStorage.getItem('token');
-    if (token) window.location.href = `/adminDashboard/${token}`;
-    else window.location.href = '/pages/adminDashboard.html';
-  } else if (role === 'doctor') {
-    const token = localStorage.getItem('token');
-    if (token) window.location.href = `/doctorDashboard/${token}`;
-    else window.location.href = '/pages/doctorDashboard.html';
-  } else if (role === 'patient') {
+    if (!res.ok) {
+      alert('Invalid credentials');
+      return;
+    }
+
+    const data = await res.json();
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', 'patient');
+
     window.location.href = '/pages/patientDashboard.html';
+  } catch (e) {
+    console.error(e);
+    alert('Patient login failed');
   }
-}
-
+};
