@@ -1,14 +1,9 @@
-
 <!-- adminDashboard.html -->
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-
-    <!-- Page Title -->
     <title>Admin Dashboard</title>
-
-    <!-- Favicon -->
     <link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}" />
 
     <!-- CSS Files -->
@@ -76,17 +71,26 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal (single, shared) -->
     <div id="modal" class="modal" style="display: none;">
-        <span id="closeModal" class="close">&times;</span>
-        <div id="modal-body"></div>
+        <div class="modal-content">
+            <span id="closeModal" class="close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
     </div>
 
     <!-- Page-Specific Scripts -->
-<script type="module" th:src="@{/js/services/index.js}"></script>
-<script type="module" th:src="@{/js/adminDashboard.js}"></script>
-<script type="module" th:src="@{/js/components/doctorCard.js}"></script>
+    <script type="module" th:src="@{/js/adminDashboard.js}" defer></script>
+    <script type="module" th:src="@{/js/components/doctorCard.js}" defer></script>
 
+    <!-- small safety: if user already has a role in localStorage, show the role background -->
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const r = localStorage.getItem('userRole') || localStorage.getItem('role');
+        if (r === 'admin' || r === 'doctor' || r === 'patient') {
+          document.body.classList.add('role-bg');
+        }
+      });
+    </script>
 </body>
 </html>
-
