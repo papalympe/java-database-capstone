@@ -1,36 +1,30 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Select Role</title>
-    <!-- Favicon -->
     <link rel="icon" href="/assets/images/logo/logo.png" type="image/png">
-    
-    <!-- CSS -->
     <link rel="stylesheet" href="/assets/css/index.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    
-    <!-- JS Utilities and Rendering -->
+
+    <!-- non-module helpers -->
     <script src="/js/util.js" defer></script>
     <script src="/js/render.js" defer></script>
-    
+
+    <!-- services module (exports globals) - load BEFORE header/footer which are non-module -->
     <script type="module" src="/js/services/index.js" defer></script>
-    <script type="module" src="/js/initRoleButtons.js" defer></script>
-    
-    <!-- JS Components (only non-module components: keep if they are not ES modules) -->
+
+    <!-- init that attaches role buttons (non-module) -->
+    <script src="/js/initRoleButtons.js" defer></script>
+
+    <!-- header/footer are non-module and depend on window.openModal -->
     <script src="/js/components/header.js" defer></script>
     <script src="/js/components/footer.js" defer></script>
-    <!-- DO NOT include /js/components/modals.js HERE as a normal script (it is an ES module) -->
 </head>
-    
 <body>
     <div class="container">
         <div class="wrapper">
-            <!-- Header Placeholder -->
             <div id="header"></div>
-            
-            <!-- Main Content -->
             <main class="main-content">
                 <h2>Select Your Role</h2>
                 <div class="role-buttons">
@@ -39,21 +33,15 @@
                     <button id="patientBtn">Patient</button>
                 </div>
             </main>
-            
-            <!-- Footer Placeholder -->
             <div id="footer"></div>
         </div>
     </div>
-    
-    <!-- Modal -->
+
     <div id="modal" class="modal" style="display: none;">
         <div class="modal-content">
             <span id="closeModal" class="close">&times;</span>
-            <div id="modal-body">
-                <!-- Dynamic content injected by JS -->
-            </div>
+            <div id="modal-body"></div>
         </div>
     </div>
-    
 </body>
 </html>
