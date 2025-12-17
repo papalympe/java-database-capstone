@@ -6,8 +6,8 @@ import { createDoctorCard } from "../components/doctorCard.js";
 document.addEventListener("DOMContentLoaded", () => {
   // safe element refs
   const searchEl = document.getElementById("searchBar");
-  const timeEl = document.getElementById("filterTime");
-  const specEl = document.getElementById("filterSpecialty");
+  const timeEl = document.getElementById("timeFilter");
+  const specEl = document.getElementById("specialtyFilter");
   const addDocBtn = document.getElementById("addDocBtn");
 
   if (addDocBtn) addDocBtn.addEventListener("click", () => openModal("addDoctor"));
@@ -34,8 +34,8 @@ async function loadDoctorCards() {
 async function filterDoctorsOnChange() {
   try {
     const name = document.getElementById("searchBar")?.value.trim() || '';
-    const time = document.getElementById("filterTime")?.value || '';
-    const specialty = document.getElementById("filterSpecialty")?.value || '';
+    const time = document.getElementById("timeFilter")?.value || '';
+    const specialty = document.getElementById("specialtyFilter")?.value || '';
 
     // Call service
     const result = await filterDoctors(name, time, specialty);
