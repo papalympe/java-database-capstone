@@ -1,6 +1,6 @@
 // /js/services/index.js  (module entrypoint)
-import { openModal as _openModal } from '../components/modals.js';
-import { API_BASE_URL } from '../config/config.js';
+import { openModal as _openModal } from '/js/components/modals.js';
+import { API_BASE_URL } from '/js/config/config.js';
 
 // expose some helpers to the global scope so non-module scripts can call them
 window.openModal = _openModal;
@@ -9,13 +9,16 @@ window.openModal = _openModal;
 const ADMIN_API = API_BASE_URL + '/admin';
 const DOCTOR_API = API_BASE_URL + '/doctor/login';
 
-// Expose a role-open helper that other code (or inline onclick) can call
-window.openRoleModal = function(role) {
+
+export function openRoleModal(role) {
   const key = (role || '').toLowerCase();
   if (key === 'admin') return window.openModal?.('adminLogin');
   if (key === 'doctor') return window.openModal?.('doctorLogin');
   return window.openModal?.('patientLogin');
 };
+
+// keep global for legacy inline onclicks
+window.openRoleModal = openRoleModal;
 
 // Admin login handler
 window.adminLoginHandler = async function () {
