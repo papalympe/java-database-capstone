@@ -1,13 +1,15 @@
 // /js/adminDashboard.js  
-import { openModal } from "../components/modals.js";
+import { openModal } from "./components/modals.js";
 import { getDoctors, filterDoctors } from "./services/doctorServices.js";
-import { createDoctorCard } from "../components/doctorCard.js";
+import { createDoctorCard } from "./components/doctorCard.js";
+
+// expose openModal globally so header inline onclick("openModal('addDoctor')") works
+window.openModal = openModal;
 
 console.log("adminDashboard.js LOAD");
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("adminDashboard.js: DOMContentLoaded fired");
-
   // initial load
   loadDoctorCards();
 
