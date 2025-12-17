@@ -1,12 +1,12 @@
 // ================================
-// doctorCard.js
+// /js/components/doctorCard.js
 // Creates a dynamic doctor card component with role-based actions
 // ================================
 
 // Import helper functions
-import { showBookingOverlay } from "./loggedPatient.js";
+import { showBookingOverlay } from "../loggedPatient.js";
 import { deleteDoctor } from "../services/doctorServices.js";
-import { getPatientData } from "../services/patientServices.js";
+import { getPatientData } from "../services/patientServices.js";;
 
 /**
  * Creates a DOM element representing a single doctor card
