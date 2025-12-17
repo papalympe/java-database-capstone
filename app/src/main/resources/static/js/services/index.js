@@ -63,7 +63,10 @@ window.adminLoginHandler = async function () {
 
         if (response.ok) {
             const data = await response.json();
+            // Save token & canonical role
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userRole', 'admin');
+            // use existing navigation helper (renders header depending on userRole)
             selectRole('admin');
         } else {
             alert('Invalid credentials!');
@@ -100,6 +103,7 @@ window.doctorLoginHandler = async function () {
         if (response.ok) {
             const data = await response.json();
             localStorage.setItem('token', data.token);
+            localStorage.setItem('userRole', 'doctor');
             selectRole('doctor');
         } else {
             alert('Invalid credentials!');
@@ -170,7 +174,7 @@ window.loginPatient = async function () {
 
         const data = await response.json();
         localStorage.setItem('token', data.token);
-        localStorage.setItem('role', 'patient');
+        localStorage.setItem('userRole', 'patient');
 
         window.location.href = '/pages/patientDashboard.html';
 
@@ -183,7 +187,7 @@ window.loginPatient = async function () {
 
 // Helper selectRole
 function selectRole(role) {
-    localStorage.setItem('role', role);
+    localStorage.setItem('userRole', role);
     // Redirect or render pages based on role
     if (role === 'admin') {
         window.location.href = '/pages/adminDashboard.html';
