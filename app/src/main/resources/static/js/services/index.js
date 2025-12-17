@@ -187,13 +187,20 @@ window.loginPatient = async function () {
 
 // Helper selectRole
 function selectRole(role) {
-    localStorage.setItem('userRole', role);
-    // Redirect or render pages based on role
-    if (role === 'admin') {
-        window.location.href = '/pages/adminDashboard.html';
-    } else if (role === 'doctor') {
-        window.location.href = '/pages/doctorDashboard.html';
-    } else {
-        window.location.href = '/';
-    }
+  // canonical key = "userRole"
+  localStorage.setItem('userRole', role);
+  // redirect
+  if (role === 'admin') {
+    // ensure token already stored by login handler
+    const token = localStorage.getItem('token');
+    if (token) window.location.href = `/adminDashboard/${token}`;
+    else window.location.href = '/pages/adminDashboard.html';
+  } else if (role === 'doctor') {
+    const token = localStorage.getItem('token');
+    if (token) window.location.href = `/doctorDashboard/${token}`;
+    else window.location.href = '/pages/doctorDashboard.html';
+  } else if (role === 'patient') {
+    window.location.href = '/pages/patientDashboard.html';
+  }
 }
+
