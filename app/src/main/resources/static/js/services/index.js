@@ -66,11 +66,12 @@ window.adminLoginHandler = async function () {
             // Save token & canonical role
             localStorage.setItem('token', data.token);
             localStorage.setItem('userRole', 'admin');
-            // use existing navigation helper (renders header depending on userRole)
             selectRole('admin');
         } else {
             alert('Invalid credentials!');
         }
+        // navigate to server-protected page (server will validate token from path)
+    window.location.href = `/adminDashboard/${data.token}`;
     } catch (error) {
         console.error('Admin login error:', error);
         alert('Something went wrong. Please try again.');
@@ -108,6 +109,7 @@ window.doctorLoginHandler = async function () {
         } else {
             alert('Invalid credentials!');
         }
+         window.location.href = `/doctorDashboard/${data.token}`;
     } catch (error) {
         console.error('Doctor login error:', error);
         alert('Something went wrong. Please try again.');
