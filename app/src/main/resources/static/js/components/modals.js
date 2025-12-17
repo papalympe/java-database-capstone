@@ -1,14 +1,18 @@
-// modals.js
+// js/components/modals.js
+// Εξάγω την openModal ως ES module function
 
 function ensureModalExists() {
-  if (!document.getElementById("modal")) {
-    document.body.insertAdjacentHTML("beforeend", `
-      <div id="modal" class="modal" style="display:none;">
-        <span id="closeModal" class="close">&times;</span>
+  if (document.getElementById("modal")) return;
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="modal" class="modal" style="display:none;" aria-hidden="true">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button id="closeModal" class="close" aria-label="Close modal">&times;</button>
         <div id="modal-body"></div>
       </div>
-    `);
-  }
+    </div>
+  `);
+  console.log("modals.js -> modal element injected");
 }
 
 export function openModal(type) {
@@ -18,14 +22,24 @@ export function openModal(type) {
   const modalBody = document.getElementById("modal-body");
   const closeBtn = document.getElementById("closeModal");
 
-  let modalContent = "";
+  if (!modal || !modalBody || !closeBtn) {
+    console.error("modals.js -> modal elements not present");
+    return;
+  }
 
+  console.log("openModal CALLED with:", type);
+
+  // Reset body
+  modalBody.innerHTML = "";
+
+  // Build content
+  let modalContent = "";
   switch (type) {
     case "addDoctor":
       modalContent = `
-        <h2>Add Doctor</h2>
+        <h2 id="modal-title">Add Doctor</h2>
         <input id="doctorName" placeholder="Doctor Name" class="input-field">
-        <select id="specialization" class="input-field">
+        <select id="specialization" class="input-field select-dropdown">
           <option value="">Specialization</option>
           <option value="Cardiologist">Cardiologist</option>
           <option value="Dentist">Dentist</option>
@@ -41,7 +55,7 @@ export function openModal(type) {
 
     case "adminLogin":
       modalContent = `
-        <h2>Admin Login</h2>
+        <h2 id="modal-title">Admin Login</h2>
         <input id="username" placeholder="Username" class="input-field">
         <input id="password" type="password" placeholder="Password" class="input-field">
         <button id="adminLoginBtn" class="dashboard-btn">Login</button>
@@ -50,7 +64,7 @@ export function openModal(type) {
 
     case "doctorLogin":
       modalContent = `
-        <h2>Doctor Login</h2>
+        <h2 id="modal-title">Doctor Login</h2>
         <input id="email" placeholder="Email" class="input-field">
         <input id="password" type="password" placeholder="Password" class="input-field">
         <button id="doctorLoginBtn" class="dashboard-btn">Login</button>
@@ -59,7 +73,7 @@ export function openModal(type) {
 
     case "patientLogin":
       modalContent = `
-        <h2>Patient Login</h2>
+        <h2 id="modal-title">Patient Login</h2>
         <input id="email" placeholder="Email" class="input-field">
         <input id="password" type="password" placeholder="Password" class="input-field">
         <button id="loginBtn" class="dashboard-btn">Login</button>
@@ -68,33 +82,76 @@ export function openModal(type) {
 
     case "patientSignup":
       modalContent = `
-        <h2>Patient Signup</h2>
+        <h2 id="modal-title">Patient Signup</h2>
         <input id="name" placeholder="Name" class="input-field">
         <input id="email" placeholder="Email" class="input-field">
         <input id="password" type="password" placeholder="Password" class="input-field">
         <button id="signupBtn" class="dashboard-btn">Signup</button>
       `;
       break;
+
+    default:
+      modalContent = `<p>Unknown modal type: ${type}</p>`;
   }
 
+  // Insert content and show
   modalBody.innerHTML = modalContent;
   modal.style.display = "block";
+  modal.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden"; // prevent background scroll
 
-  closeBtn.onclick = () => modal.style.display = "none";
+  // ---- Close helpers ----
+  const closeModal = () => {
+    modal.style.display = "none";
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    // remove keydown listener
+    window.removeEventListener("keydown", escHandler);
+  };
 
-  // 🔑 IMPORTANT: call GLOBAL handlers
-  if (type === "adminLogin")
-    document.getElementById("adminLoginBtn").onclick = () => window.adminLoginHandler();
+  const escHandler = (e) => {
+    if (e.key === "Escape") closeModal();
+  };
 
-  if (type === "doctorLogin")
-    document.getElementById("doctorLoginBtn").onclick = () => window.doctorLoginHandler();
+  // click outside to close
+  const outsideClickHandler = (e) => {
+    if (e.target === modal) closeModal();
+  };
 
-  if (type === "patientLogin")
-    document.getElementById("loginBtn").onclick = () => window.loginPatient();
+  // Attach close listeners
+  closeBtn.onclick = closeModal;
+  modal.addEventListener("click", outsideClickHandler);
+  window.addEventListener("keydown", escHandler);
 
-  if (type === "patientSignup")
-    document.getElementById("signupBtn").onclick = () => window.signupPatient();
+  // ---- Wire action buttons to globals safely ----
+  // If the global handler exists call it; otherwise warn.
+  const safeBind = (selector, handlerName) => {
+    const btn = modalBody.querySelector(selector);
+    if (!btn) return;
+    btn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      if (typeof window[handlerName] === "function") {
+        try {
+          // call the global handler; keep modal open/close behavior to handler
+          window[handlerName]();
+        } catch (err) {
+          console.error(`${handlerName} threw:`, err);
+        }
+      } else {
+        console.warn(`${handlerName} not defined on window`);
+      }
+    });
+  };
 
-  if (type === "addDoctor")
-    document.getElementById("saveDoctorBtn").onclick = () => window.adminAddDoctor();
+  safeBind("#adminLoginBtn", "adminLoginHandler");
+  safeBind("#doctorLoginBtn", "doctorLoginHandler");
+  safeBind("#loginBtn", "loginPatient");
+  safeBind("#signupBtn", "signupPatient");
+  safeBind("#saveDoctorBtn", "adminAddDoctor");
+
+  // focus first input for accessibility
+  const firstInput = modalBody.querySelector("input, select, button");
+  if (firstInput) firstInput.focus();
+
+  console.log("modal opened:", type);
 }
