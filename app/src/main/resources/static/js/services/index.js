@@ -42,79 +42,79 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Admin login handler - using modal ids 'username' and 'password' (per modals.js)
 window.adminLoginHandler = async function () {
-    try {
-        const usernameEl = document.getElementById('username');
-        const passwordEl = document.getElementById('password');
-        const username = usernameEl ? usernameEl.value.trim() : '';
-        const password = passwordEl ? passwordEl.value.trim() : '';
+  try {
+    const username = document.getElementById('username')?.value?.trim() || '';
+    const password = document.getElementById('password')?.value?.trim() || '';
 
-        if (!username || !password) {
-            alert('Please enter both username and password.');
-            return;
-        }
-
-        const admin = { username, password };
-
-        const response = await fetch(ADMIN_API + '/login', { // ensure correct backend path
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(admin)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            // Save token & canonical role
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('userRole', 'admin');
-            selectRole('admin');
-        } else {
-            alert('Invalid credentials!');
-        }
-        // navigate to server-protected page (server will validate token from path)
-    window.location.href = `/adminDashboard/${data.token}`;
-    } catch (error) {
-        console.error('Admin login error:', error);
-        alert('Something went wrong. Please try again.');
+    if (!username || !password) {
+      alert('Please enter both username and password.');
+      return;
     }
+
+    const admin = { username, password };
+
+    const response = await fetch(ADMIN_API + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(admin)
+    });
+
+    if (!response.ok) {
+      alert('Invalid credentials!');
+      return;
+    }
+
+    const data = await response.json();
+
+    // Save token & canonical role BEFORE navigation
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', 'admin');
+
+    // Navigate once, using the returned token
+    window.location.href = `/adminDashboard/${data.token}`;
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    alert('Something went wrong. Please try again.');
+  }
 };
 
 // Doctor login handler - modal uses ids 'email' & 'password'
 window.doctorLoginHandler = async function () {
-    try {
-        const emailEl = document.getElementById('email');
-        const passwordEl = document.getElementById('password');
-        const email = emailEl ? emailEl.value.trim() : '';
-        const password = passwordEl ? passwordEl.value.trim() : '';
+  try {
+    const email = document.getElementById('email')?.value?.trim() || '';
+    const password = document.getElementById('password')?.value?.trim() || '';
 
-        if (!email || !password) {
-            alert('Please enter both email and password.');
-            return;
-        }
-
-        const doctor = { identifier: email, password }; // if backend expects identifier OR {email,password}
-        // adjust payload to your backend contract: earlier you used Login DTO with 'identifier'
-        const payload = { identifier: email, password };
-
-        const response = await fetch(DOCTOR_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('userRole', 'doctor');
-            selectRole('doctor');
-        } else {
-            alert('Invalid credentials!');
-        }
-         window.location.href = `/doctorDashboard/${data.token}`;
-    } catch (error) {
-        console.error('Doctor login error:', error);
-        alert('Something went wrong. Please try again.');
+    if (!email || !password) {
+      alert('Please enter both email and password.');
+      return;
     }
+
+    const payload = { identifier: email, password };
+
+    const response = await fetch(DOCTOR_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      alert('Invalid credentials!');
+      return;
+    }
+
+    const data = await response.json();
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', 'doctor');
+
+    window.location.href = `/doctorDashboard/${data.token}`;
+
+  } catch (error) {
+    console.error('Doctor login error:', error);
+    alert('Something went wrong. Please try again.');
+  }
 };
+
 
 
 // ------------------- Patient Signup -------------------
