@@ -6,29 +6,26 @@ import com.project.back_end.services.ServiceManager;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
 
 import java.util.Map;
 
 @Controller
 public class DashboardController {
 
-    // Autowire the shared service for token validation
     @Autowired
-    private ServiceManager serviceManager; 
+    private ServiceManager serviceManager;
 
     /**
      * Admin Dashboard
-     * Handles GET requests to /adminDashboard/{token}
+     * Validates token, then redirects to the static admin page under /pages/
      */
     @GetMapping("/adminDashboard/{token}")
     public String adminDashboard(@PathVariable("token") String token) {
-        // Validate token for admin role
         ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "admin");
-        
-        // If the map is empty, the token is valid
+
         if (tokenValidation.getStatusCode().is2xxSuccessful()) {
-            return "admin/adminDashboard";
+            // Redirect to the static page served from src/main/resources/static/pages/adminDashboard.html
+            return "redirect:/pages/adminDashboard.html";
         } else {
             return "redirect:/";
         }
@@ -36,16 +33,14 @@ public class DashboardController {
 
     /**
      * Doctor Dashboard
-     * Handles GET requests to /doctorDashboard/{token}
+     * Validates token, then redirects to the static doctor page under /pages/
      */
     @GetMapping("/doctorDashboard/{token}")
     public String doctorDashboard(@PathVariable("token") String token) {
-        // Validate token for doctor role
         ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
 
-        // If the map is empty, the token is valid
         if (tokenValidation.getStatusCode().is2xxSuccessful()) {
-            return "doctor/doctorDashboard";
+            return "redirect:/pages/doctorDashboard.html";
         } else {
             return "redirect:/";
         }
