@@ -33,13 +33,19 @@ function renderHeader() {
       </div>
       <nav>`;
 
-  // Handle invalid session or missing token
   if ((role === "loggedPatient" || role === "admin" || role === "doctor") && !token) {
-    localStorage.removeItem("userRole");
-    alert("Session expired or invalid login. Please log in again.");
-    window.location.href = "/";
-    return;
-  }
+  console.warn("header: role present but token missing:", role);
+  // Show minimal header and don't redirect away immediately
+  headerDiv.innerHTML = `
+    <header class="header">
+      <div class="logo-section">
+        <img src="/assets/images/logo/logo.png" alt="Hospital CRM Logo" class="logo-img">
+        <span class="logo-title">Hospital CMS</span>
+      </div>
+    </header>`;
+  return;
+}
+
 
   // Add role-specific buttons
   if (role === "admin") {
@@ -116,7 +122,7 @@ document.addEventListener("DOMContentLoaded", renderHeader);
 // Apply role-based background
 // ================================
 document.addEventListener("DOMContentLoaded", () => {
-  const role = localStorage.getItem("userRole");
+  const role = localStorage.getItem("userRole") || localStorage.getItem("role");
 
   if (role === "admin" || role === "doctor" || role === "patient") {
     document.body.classList.add("role-bg");
