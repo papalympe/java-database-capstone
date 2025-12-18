@@ -131,9 +131,14 @@ public class ServiceManager {
         return result;
     }
 
-    // fallback: call general method and unwrap
-    Map<String, Object> inner = doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
-    result.put("doctors", inner.get("doctors"));
+     // Fallback: call the general method and unwrap if possible
+    Map<String, Object> fallback = doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
+    if (fallback != null && fallback.get("doctors") instanceof List) {
+        result.put("doctors", fallback.get("doctors"));
+    } else {
+        // if fallback unexpectedly returned list directly
+        result.put("doctors", fallback);
+    }
     return result;
 }
 
