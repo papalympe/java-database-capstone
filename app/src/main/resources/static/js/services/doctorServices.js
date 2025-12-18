@@ -81,13 +81,19 @@ export async function saveDoctor(doctor, token) {
     }
 }
 
+/**
+ * Filter doctors based on criteria
+ * Always returns an object: { doctors: Array }
+ *
+ * Accepts either query params (preferred) or legacy path style.
+ */
 export async function filterDoctors(name = '', time = '', specialty = '') {
     try {
         // build query params only for provided values
         const params = new URLSearchParams();
         if (name && name.trim() !== '') params.set('name', name.trim());
         if (time && time.trim() !== '') params.set('time', time.trim());
-        // NOTE: backend uses parameter name "speciality" (British spelling) — keep consistent
+        // NOTE: backend expects "speciality" (British spelling) as query param
         if (specialty && specialty.trim() !== '') params.set('speciality', specialty.trim());
 
         const url = `${DOCTOR_API}/filter${params.toString() ? `?${params.toString()}` : ''}`;
@@ -103,12 +109,40 @@ export async function filterDoctors(name = '', time = '', specialty = '') {
         }
 
         const data = await response.json();
-        // normalize response to always return { doctors: [] } or array depending on your callers
-        // caller (adminDashboard) expects either array or object with .doctors
-        return data.doctors || data || [];
+
+        // NORMALIZE: extract the doctors array from several possible shapes
+        let doctors = [];
+
+        // Case 1: data is an array already
+        if (Array.isArray(data)) {
+            doctors = data;
+        }
+        // Case 2: data.doctors is array (common)
+        else if (data && Array.isArray(data.doctors)) {
+            doctors = data.doctors;
+        }
+        // Case 3: nested: data.doctors.doctors
+        else if (data && data.doctors && Array.isArray(data.doctors.doctors)) {
+            doctors = data.doctors.doctors;
+        }
+        // Case 4: some endpoint returns object with unknown prop containing array -> find first array
+        else if (data && typeof data === 'object') {
+            for (const k of Object.keys(data)) {
+                if (Array.isArray(data[k])) {
+                    doctors = data[k];
+                    break;
+                }
+            }
+        }
+
+        // Final fallback: if still empty but data itself looks like a single doctor object, wrap it
+        if (doctors.length === 0 && data && typeof data === 'object' && (data.name || data.email)) {
+            doctors = [data];
+        }
+
+        return { doctors };
     } catch (error) {
         console.error('Error filtering doctors:', error);
-        // do not alert here repeatedly; caller can decide
         return { doctors: [] };
     }
 }
