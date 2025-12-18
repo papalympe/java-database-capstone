@@ -67,17 +67,25 @@ public class ServiceManager {
     // -----------------------------------------------------
     // FILTER DOCTORS
     // -----------------------------------------------------
-    public Map<String, Object> filterDoctor(String name, String specialty, String time) {
-        Map<String, Object> result = new HashMap<>();
-        if ((name == null || name.isEmpty()) &&
-            (specialty == null || specialty.isEmpty()) &&
-            (time == null || time.isEmpty())) {
-            result.put("doctors", doctorService.getDoctors());
-            return result;
-        }
-        result.put("doctors", doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time));
-        return result;
+  public Map<String, Object> filterDoctor(String name, String specialty, String time) {
+
+    // Αν δεν υπάρχει κανένα φίλτρο → όλοι οι γιατροί
+    if ((name == null || name.isEmpty()) &&
+        (specialty == null || specialty.isEmpty()) &&
+        (time == null || time.isEmpty())) {
+
+        return Map.of("doctors", doctorService.getDoctors());
     }
+
+    // Η service επιστρέφει Map<String, Object>
+    Map<String, Object> innerResult =
+            doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
+
+    // ⬇️ ΞΕΤΥΛΙΓΟΥΜΕ το inner map
+    Object doctors = innerResult.get("doctors");
+
+    return Map.of("doctors", doctors);
+}
 
     // -----------------------------------------------------
     // VALIDATE APPOINTMENT
