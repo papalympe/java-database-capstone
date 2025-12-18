@@ -1,21 +1,21 @@
+// src/main/java/com/project/back_end/config/WebConfig.java
 package com.project.back_end.config;
 
-
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.NonNull; 
-
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.*;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
-    public void addCorsMappings(@NonNull CorsRegistry registry) {
-        // Allow CORS for all endpoints
+    public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")  // Add your frontend URL here
-                .allowedMethods("GET", "POST", "PUT", "DELETE")  // Specify allowed methods
-                .allowedHeaders("*");  // You can restrict headers if needed
+            // στις νεότερες εκδόσεις: allowedOriginPatterns επιτρέπει wildcards μαζί με credentials
+            .allowedOriginPatterns("https://kpapalum-8080.theiadockernext-0-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai", "https://your-other-origin.example.com")
+            .allowedMethods("GET","POST","PUT","DELETE","OPTIONS","PATCH")
+            .allowedHeaders("*")
+            .allowCredentials(true)
+            .maxAge(3600);
     }
 }
