@@ -1,4 +1,4 @@
-// doctorServices.js
+// src/main/resources/static/js/services/doctorServices.js
 
 // Import the API base URL
 import { API_BASE_URL } from "../config/config.js";
@@ -81,31 +81,34 @@ export async function saveDoctor(doctor, token) {
     }
 }
 
-/**
- * Filter doctors based on criteria
- * @param {string} name - Doctor name (optional)
- * @param {string} time - Availability time (optional)
- * @param {string} specialty - Doctor specialty (optional)
- * @returns {Array} - Filtered list of doctors
- */
 export async function filterDoctors(name = '', time = '', specialty = '') {
     try {
-        const url = `${DOCTOR_API}/filter/${encodeURIComponent(name)}/${encodeURIComponent(time)}/${encodeURIComponent(specialty)}`;
+        // build query params only for provided values
+        const params = new URLSearchParams();
+        if (name && name.trim() !== '') params.set('name', name.trim());
+        if (time && time.trim() !== '') params.set('time', time.trim());
+        // NOTE: backend uses parameter name "speciality" (British spelling) — keep consistent
+        if (specialty && specialty.trim() !== '') params.set('speciality', specialty.trim());
+
+        const url = `${DOCTOR_API}/filter${params.toString() ? `?${params.toString()}` : ''}`;
+
         const response = await fetch(url, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
 
         if (!response.ok) {
-            console.error('Failed to filter doctors:', response.statusText);
+            console.error('Failed to filter doctors:', response.status, response.statusText);
             return { doctors: [] };
         }
 
         const data = await response.json();
-        return data.doctors || [];
+        // normalize response to always return { doctors: [] } or array depending on your callers
+        // caller (adminDashboard) expects either array or object with .doctors
+        return data.doctors || data || [];
     } catch (error) {
         console.error('Error filtering doctors:', error);
-        alert('Failed to fetch filtered doctors. Please try again.');
+        // do not alert here repeatedly; caller can decide
         return { doctors: [] };
     }
 }
