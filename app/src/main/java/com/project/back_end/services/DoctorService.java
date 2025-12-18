@@ -2,7 +2,7 @@ package com.project.back_end.services;
 
 import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Doctor;
-import com.project.back_end.models.Appointment; 
+import com.project.back_end.models.Appointment;
 import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
 import com.project.back_end.services.TokenService;
@@ -62,7 +62,7 @@ public class DoctorService {
         // normalize availableTimes and filter out booked ones; preserve original format where possible
         List<String> result = new ArrayList<>();
         for (String timeStr : availableTimes) {
-            Optional<LocalTime> parsed = parseToLocalTime(timeStr);
+            Optional<LocalTime> parsed = extractStartLocalTime(timeStr);
             if (parsed.isEmpty()) continue;
             String norm = formatLocalTime(parsed.get());
             if (!booked.contains(norm)) {
@@ -276,7 +276,7 @@ public class DoctorService {
 
             boolean ok = false;
             for (String tstr : times) {
-                Optional<LocalTime> parsed = parseToLocalTime(tstr);
+                Optional<LocalTime> parsed = extractStartLocalTime(tstr);
                 if (parsed.isEmpty()) continue;
                 LocalTime t = parsed.get();
                 if (wantAM && t.isBefore(noon)) {
@@ -296,6 +296,32 @@ public class DoctorService {
     // -----------------------
     // Utilities: parse and format times
     // -----------------------
+    /**
+     * Extracts the "start" time from a slot string. Examples:
+     *  - "09:00-10:00"  -> parse "09:00"
+     *  - "9:00 AM - 10:00 AM" -> parse "9:00 AM"
+     *  - "09:00" -> parse "09:00"
+     */
+    private Optional<LocalTime> extractStartLocalTime(String timeStr) {
+        if (timeStr == null) return Optional.empty();
+        String trimmed = timeStr.trim();
+
+        // support "09:00-10:00" or "09:00 - 10:00"
+        if (trimmed.contains("-")) {
+            String[] parts = trimmed.split("-", 2);
+            trimmed = parts[0].trim();
+        }
+
+        // support "to" forms: "9:00 to 10:00"
+        String lower = trimmed.toLowerCase();
+        if (lower.contains(" to ")) {
+            trimmed = trimmed.split("(?i) to ")[0].trim();
+        }
+
+        // fallback to parse the cleaned start token
+        return parseToLocalTime(trimmed);
+    }
+
     private Optional<LocalTime> parseToLocalTime(String timeStr) {
         if (timeStr == null) return Optional.empty();
         String trimmed = timeStr.trim();
