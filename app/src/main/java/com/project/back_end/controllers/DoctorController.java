@@ -119,14 +119,14 @@ public class DoctorController {
     public ResponseEntity<Map<String, Object>> filter(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String time,
-            @RequestParam(name = "speciality", required = false) String speciality) {
+            @RequestParam(required = false) String specialty) {
 
         // Normalize empty strings to null to let serviceManager do default behavior
         if (name != null && name.trim().isEmpty()) name = null;
         if (time != null && time.trim().isEmpty()) time = null;
-        if (speciality != null && speciality.trim().isEmpty()) speciality = null;
-
-        Map<String, Object> filteredDoctors = serviceManager.filterDoctor(name, speciality, time);
+        if (specialty != null && specialty.trim().isEmpty()) specialty = null;
+        
+        Map<String, Object> filteredDoctors = serviceManager.filterDoctor(name, specialty, time);
         return ResponseEntity.ok(filteredDoctors);
     }  
 
