@@ -1,4 +1,4 @@
-// config.js
+// /src/main/resources/static/js/config/config.js
 
 /**
  * Configuration file for defining global constants and environment-specific settings.
