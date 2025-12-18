@@ -1,3 +1,4 @@
+// src/main/java/com/project/back_end/services/ServiceManager.java
 package com.project.back_end.services;
 
 import com.project.back_end.DTO.Login;
@@ -67,24 +68,73 @@ public class ServiceManager {
     // -----------------------------------------------------
     // FILTER DOCTORS
     // -----------------------------------------------------
-  public Map<String, Object> filterDoctor(String name, String specialty, String time) {
+    public Map<String, Object> filterDoctor(String name, String specialty, String time) {
+    // Normalize empty -> null
+    if (name != null && name.trim().isEmpty()) name = null;
+    if (specialty != null && specialty.trim().isEmpty()) specialty = null;
+    if (time != null && time.trim().isEmpty()) time = null;
 
-    // Αν δεν υπάρχει κανένα φίλτρο → όλοι οι γιατροί
-    if ((name == null || name.isEmpty()) &&
-        (specialty == null || specialty.isEmpty()) &&
-        (time == null || time.isEmpty())) {
+    Map<String, Object> result = new HashMap<>();
 
-        return Map.of("doctors", doctorService.getDoctors());
+    // No filters -> all doctors
+    if (name == null && specialty == null && time == null) {
+        result.put("doctors", doctorService.getDoctors());
+        return result;
     }
 
-    // Η service επιστρέφει Map<String, Object>
-    Map<String, Object> innerResult =
-            doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
+    // name + specialty + time
+    if (name != null && specialty != null && time != null) {
+        Map<String, Object> inner = doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
 
-    // ⬇️ ΞΕΤΥΛΙΓΟΥΜΕ το inner map
-    Object doctors = innerResult.get("doctors");
+    // name + specialty
+    if (name != null && specialty != null && time == null) {
+        Map<String, Object> inner = doctorService.filterDoctorByNameAndSpecility(name, specialty);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
 
-    return Map.of("doctors", doctors);
+    // name + time
+    if (name != null && time != null && specialty == null) {
+        Map<String, Object> inner = doctorService.filterDoctorByNameAndTime(name, time);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
+
+    // specialty + time
+    if (specialty != null && time != null && name == null) {
+        Map<String, Object> inner = doctorService.filterDoctorByTimeAndSpecility(specialty, time);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
+
+    // only name
+    if (name != null && specialty == null && time == null) {
+        Map<String, Object> inner = doctorService.findDoctorByName(name);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
+
+    // only specialty
+    if (specialty != null && name == null && time == null) {
+        Map<String, Object> inner = doctorService.filterDoctorBySpecility(specialty);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
+
+    // only time
+    if (time != null && name == null && specialty == null) {
+        Map<String, Object> inner = doctorService.filterDoctorsByTime(time);
+        result.put("doctors", inner.get("doctors"));
+        return result;
+    }
+
+    // fallback: call general method and unwrap
+    Map<String, Object> inner = doctorService.filterDoctorsByNameSpecilityandTime(name, specialty, time);
+    result.put("doctors", inner.get("doctors"));
+    return result;
 }
 
     // -----------------------------------------------------
