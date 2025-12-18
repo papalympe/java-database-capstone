@@ -1,3 +1,4 @@
+// src/main/java/com/project/back_end/controllers/DoctorController.java
 package com.project.back_end.controllers;
 
 import com.project.back_end.models.Doctor;
@@ -114,13 +115,20 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/filter/{name}/{time}/{speciality}")
+  @GetMapping("/filter")
     public ResponseEntity<Map<String, Object>> filter(
-            @PathVariable String name,
-            @PathVariable String time,
-            @PathVariable String speciality) {
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String time,
+            @RequestParam(name = "speciality", required = false) String speciality) {
+
+        // Normalize empty strings to null to let serviceManager do default behavior
+        if (name != null && name.trim().isEmpty()) name = null;
+        if (time != null && time.trim().isEmpty()) time = null;
+        if (speciality != null && speciality.trim().isEmpty()) speciality = null;
 
         Map<String, Object> filteredDoctors = serviceManager.filterDoctor(name, speciality, time);
         return ResponseEntity.ok(filteredDoctors);
-    }
+    }  
+
+    
 }
