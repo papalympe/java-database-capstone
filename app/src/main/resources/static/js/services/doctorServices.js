@@ -93,8 +93,8 @@ export async function filterDoctors(name = '', time = '', specialty = '') {
         const params = new URLSearchParams();
         if (name && name.trim() !== '') params.set('name', name.trim());
         if (time && time.trim() !== '') params.set('time', time.trim());
-        // NOTE: backend expects "speciality" (British spelling) as query param
-        if (specialty && specialty.trim() !== '') params.set('speciality', specialty.trim());
+        
+        if (specialty && specialty.trim() !== '') params.set('specialty', specialty.trim());
 
         const url = `${DOCTOR_API}/filter${params.toString() ? `?${params.toString()}` : ''}`;
 
