@@ -176,13 +176,13 @@ public class DoctorService {
     }
 
     // -----------------------
-    // Filter by name + ty + AM/PM
+    // Filter by name + specialty + AM/PM
     // -----------------------
     @Transactional(readOnly = true)
-    public Map<String, Object> filterDoctorsByNameSpecilityandTime(String name, String ty, String amOrPm) {
+    public Map<String, Object> filterDoctorsByNameSpecilityandTime(String name, String specialty, String amOrPm) {
         Map<String, Object> result = new HashMap<>();
-        List<Doctor> matches = doctorRepository.findByNameContainingIgnoreCaseAndtyIgnoreCase(
-                name == null ? "" : name, ty == null ? "" : ty
+        List<Doctor> matches = doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(
+                name == null ? "" : name, specialty == null ? "" : specialty
         );
 
         List<Doctor> filtered = filterDoctorByTime(matches, amOrPm);
@@ -203,37 +203,37 @@ public class DoctorService {
     }
 
     // -----------------------
-    // Filter by name + ty
+    // Filter by name + specialty
     // -----------------------
     @Transactional(readOnly = true)
-    public Map<String, Object> filterDoctorByNameAndSpecility(String name, String specilty) {
+    public Map<String, Object> filterDoctorByNameAndSpecility(String name, String specialty) {
         Map<String, Object> result = new HashMap<>();
-        List<Doctor> matches = doctorRepository.findByNameContainingIgnoreCaseAndtyIgnoreCase(
-                name == null ? "" : name, specilty == null ? "" : specilty
+        List<Doctor> matches = doctorRepository.findByNameContainingIgnoreCaseAndSpecialtyIgnoreCase(
+                name == null ? "" : name, specialty == null ? "" : specialty
         );
         result.put("doctors", matches);
         return result;
     }
 
     // -----------------------
-    // Filter by time + ty
+    // Filter by time + specialty
     // -----------------------
     @Transactional(readOnly = true)
-    public Map<String, Object> filterDoctorByTimeAndSpecility(String specilty, String amOrPm) {
+    public Map<String, Object> filterDoctorByTimeAndSpecility(String specialty, String amOrPm) {
         Map<String, Object> result = new HashMap<>();
-        List<Doctor> matches = doctorRepository.findBytyIgnoreCase(specilty == null ? "" : specilty);
+        List<Doctor> matches = doctorRepository.findBySpecialtyIgnoreCase(specialty == null ? "" : specialty);
         List<Doctor> filtered = filterDoctorByTime(matches, amOrPm);
         result.put("doctors", filtered);
         return result;
     }
 
     // -----------------------
-    // Filter by ty only
+    // Filter by specialty only
     // -----------------------
     @Transactional(readOnly = true)
-    public Map<String, Object> filterDoctorBySpecility(String specilty) {
+    public Map<String, Object> filterDoctorBySpecility(String specialty) {
         Map<String, Object> result = new HashMap<>();
-        List<Doctor> matches = doctorRepository.findBytyIgnoreCase(specilty == null ? "" : specilty);
+        List<Doctor> matches = doctorRepository.findBySpecialtyIgnoreCase(specialty == null ? "" : specialty);
         result.put("doctors", matches);
         return result;
     }
