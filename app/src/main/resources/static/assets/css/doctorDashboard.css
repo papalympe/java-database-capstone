@@ -1,164 +1,198 @@
 /* =====================================
-   DOCTOR DASHBOARD STYLES
+   DOCTOR DASHBOARD STYLES (fixed)
 ===================================== */
 
 /* 1. RESET & BASE STYLES */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html, body {
-    height: 100%;
-    font-family: Arial, sans-serif;
+  height: 100%;
+  font-family: Arial, sans-serif;
 }
 
 /* 2. LAYOUT */
 .wrapper {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
+/* === BACKGROUND IMAGE - force it, use existing image path.
+   Use the defineRole image you listed; if you prefer a different
+   one replace the URL below with '/assets/images/index/index.png' etc. === */
 .main-content {
-    flex-grow: 1;
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  flex-grow: 1;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  background-image: url('/assets/images/defineRole/index.png') !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+  /* ensure no white overlay unless intended */
+  background-color: transparent !important;
 }
+
+/* Optional overlay for readability (comment out if you don't want) */
+/*
+.main-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.35);
+  pointer-events: none;
+}
+*/
 
 /* 3. SEARCH & FILTER STYLING */
+/* Support both class names admin used (.search-input) and local .searchBar */
+.search-input,
 .searchBar {
-    width: 340px;
-    padding: 12px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 16px;
-    outline: none;
+  width: 340px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  outline: none;
+  background: rgba(255,255,255,0.95); /* make input readable over bg */
 }
 
+.search-input:focus,
 .searchBar:focus {
-    border-color: #015c5d;
+  border-color: #015c5d;
+  box-shadow: 0 0 5px rgba(1,92,93,0.25);
 }
 
+/* Filters area */
 .filters {
-    display: flex;
-    align-items: center;
-    margin-bottom: 25px;
-    gap: 10px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 25px;
+  gap: 10px;
 }
 
-.today-btn, .adminBtn {
-    background-color: #015c5d;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
+/* Ensure adminBtn style (global) applies but we tighten appearance for doctor */
+.adminBtn,
+.today-btn {
+  background-color: #015c5d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.08s;
 }
 
-.today-btn:hover, .adminBtn:hover {
-    background-color: #017d7e;
+.adminBtn:hover,
+.today-btn:hover {
+  background-color: #017d7e;
+  transform: translateY(-1px);
 }
 
-.date-picker {
-    margin-left: 10px;
-    margin-top: 13px;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    height: 30px;
-    font-size: 14px;
+/* date picker (matching JS class .datePicker) */
+.datePicker,
+.date-picker,
+.date-picker input {
+  margin-left: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  height: 36px;
+  font-size: 14px;
+  background: #fff;
 }
 
 /* 4. TABLE STYLING */
 .patient-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: sans-serif;
-    margin-top: 20px;
+  width: 100%;
+  border-collapse: collapse;
+  font-family: sans-serif;
+  margin-top: 20px;
+  background: rgba(255,255,255,0.9); /* keep table readable above bg */
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .patient-table thead {
-    background-color: #33333310;
-    color: #fff;
+  background-color: rgba(1,92,93,0.12);
+  color: #015c5d;
 }
 
-.patient-table th, 
+.patient-table th,
 .patient-table td {
-    padding: 12px 16px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
+  padding: 12px 16px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
 }
 
 .patient-table tbody tr:nth-child(even) {
-    background-color: #f9f9f959;
+  background-color: rgba(249,249,249,0.6);
 }
 
 .patient-table tbody tr:nth-child(odd) {
-    background-color: #ffffffc0;
+  background-color: rgba(255,255,255,0.8);
 }
 
 .patient-table tbody tr:hover {
-    background-color: #015c5d39;
+  background-color: rgba(1,92,93,0.08);
 }
 
 /* 5. PRESCRIPTION BUTTON */
 .prescription-btn {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    transition: transform 0.2s, filter 0.2s;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: transform 0.2s, filter 0.2s;
 }
 
 .prescription-btn:hover {
-    transform: scale(1.1);
-    filter: brightness(1.2);
-}
-
-.prescription-btn:active {
-    transform: scale(0.95);
+  transform: scale(1.1);
+  filter: brightness(1.2);
 }
 
 /* 6. NO RECORD MESSAGE */
 .noPatientRecord {
-    font-size: 16px;
-    font-style: italic;
-    color: gray;
-    margin-top: 20px;
+  font-size: 16px;
+  font-style: italic;
+  color: gray;
+  margin-top: 20px;
 }
 
 /* 7. TABLE HEADER */
 .table-header {
-    font-size: 24px;
-    color: #015c5d;
-    margin-bottom: 30px;
-    margin-right: 0;
+  font-size: 24px;
+  color: #015c5d;
+  margin-bottom: 30px;
+  margin-right: 0;
 }
 
 /* 8. RESPONSIVE DESIGN */
 @media (max-width: 768px) {
-    .searchBar, .date-picker {
-        width: 90%;
-    }
+  .search-input, .searchBar, .datePicker {
+    width: 90%;
+  }
 
-    .filters {
-        flex-direction: column;
-        gap: 12px;
-    }
+  .filters {
+    flex-direction: column;
+    gap: 12px;
+  }
 
-    .patient-table th, 
-    .patient-table td {
-        padding: 10px;
-        font-size: 14px;
-    }
+  .patient-table th,
+  .patient-table td {
+    padding: 10px;
+    font-size: 14px;
+  }
 
-    .table-header {
-        font-size: 20px;
-    }
+  .table-header {
+    font-size: 20px;
+  }
 }
