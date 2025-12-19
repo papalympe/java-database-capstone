@@ -1,3 +1,4 @@
+// src/main/java/com/project/back_end/controllers/AppointmentController.java
 package com.project.back_end.controllers;
 
 import com.project.back_end.models.Appointment;
@@ -21,21 +22,44 @@ public class AppointmentController {
         this.serviceManager = serviceManager;
     }
 
-    @GetMapping("/{date}/{patientName}/{token}")
-    public ResponseEntity<Map<String, Object>> getAppointments(
-            @PathVariable String patientName,
-            @PathVariable String date,
-            @PathVariable String token) {
+@GetMapping
+public ResponseEntity<Map<String, Object>> getAppointments(
+        @RequestParam(required = false) String date,
+        @RequestParam(required = false) String patientName,
+        @RequestParam String token) {
 
-        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
-        if (tokenValidation.getStatusCode().is4xxClientError()) {
-            return ResponseEntity.status(tokenValidation.getStatusCode()).body(Map.of("error", "Unauthorized or invalid token"));
-        }
-
-        LocalDate appointmentDate = LocalDate.parse(date);
-        Map<String, Object> appointments = appointmentService.getAppointment(patientName, appointmentDate, token);
-        return ResponseEntity.ok(appointments);
+    // validate token for doctor
+    ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
+    if (tokenValidation.getStatusCode().is4xxClientError()) {
+        return ResponseEntity.status(tokenValidation.getStatusCode())
+                .body(Map.of("error", "Unauthorized or invalid token"));
     }
+
+    // default date => today when missing
+    if (date == null || date.trim().isEmpty()) {
+        date = java.time.LocalDate.now().toString();
+    }
+
+    LocalDate appointmentDate;
+    try {
+        appointmentDate = LocalDate.parse(date);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(Map.of("error", "Invalid date format. Expected yyyy-MM-dd"));
+    }
+
+    Map<String, Object> appointments = appointmentService.getAppointment(
+            patientName == null ? "" : patientName,
+            appointmentDate,
+            token
+    );
+
+    if (appointments == null) {
+        // defensive: ensure we return an empty structure rather than null
+        return ResponseEntity.ok(Map.of("appointments", List.of()));
+    }
+    return ResponseEntity.ok(appointments);
+}
+
 
     @PostMapping("/{token}")
     public ResponseEntity<Map<String, String>> bookAppointment(
