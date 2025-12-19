@@ -153,27 +153,30 @@ public class AppointmentService {
     // -----------------------------------------------------
     // GET APPOINTMENT
     // -----------------------------------------------------
-@Transactional(readOnly = true)
-public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
+    @Transactional(readOnly = true)
+    public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
     Map<String, Object> result = new HashMap<>();
 
-    // extract identifier from token (this is the doctor's email in current token generation)
     String identifier = tokenService.extractIdentifier(token);
     if (identifier == null) {
-        result.put("appointments", Collections.emptyList());
-        return result;
+        return Map.of("appointments", List.of());
     }
 
-    // find doctor by email to obtain numeric id
-    Doctor doctor = doctorRepository.findByEmail(identifier);
-    if (doctor == null) {
-        result.put("appointments", Collections.emptyList());
-        return result;
+    Long doctorId = null;
+    // Try parse as long (if token carries id), otherwise treat as email and lookup doctor
+    try {
+        doctorId = Long.parseLong(identifier);
+    } catch (NumberFormatException e) {
+        // not numeric -> lookup doctor by email
+        Doctor doc = doctorRepository.findByEmail(identifier);
+        if (doc == null) {
+            return Map.of("appointments", List.of());
+        }
+        doctorId = doc.getId();
     }
-    Long doctorId = doctor.getId();
 
-    LocalDateTime startOfDay = date.atStartOfDay();
-    LocalDateTime endOfDay = startOfDay.plusDays(1);
+    java.time.LocalDateTime startOfDay = date.atStartOfDay();
+    java.time.LocalDateTime endOfDay = startOfDay.plusDays(1);
 
     List<Appointment> appointments =
             appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
@@ -182,14 +185,14 @@ public Map<String, Object> getAppointment(String pname, LocalDate date, String t
 
     // Filter by patient name if provided
     if (pname != null && !pname.trim().isEmpty()) {
-        String low = pname.toLowerCase();
-        appointments.removeIf(a -> a.getPatient() == null || !a.getPatient().getName().toLowerCase().contains(low));
+        String pnameLower = pname.toLowerCase();
+        appointments.removeIf(a -> a.getPatient() == null || !a.getPatient().getName().toLowerCase().contains(pnameLower));
     }
 
-    // Optionally convert to DTOs — currently controllers expect Map with "appointments"
     result.put("appointments", appointments);
     return result;
 }
+
 
 
     // -----------------------------------------------------
