@@ -113,72 +113,84 @@ public class AppointmentService {
     // -----------------------------------------------------
     @Transactional
     public ResponseEntity<Map<String, String>> cancelAppointment(long id, String token) {
-        Map<String, String> response = new HashMap<>();
+    Map<String, String> response = new HashMap<>();
 
-        Optional<Appointment> opt = appointmentRepository.findById(id);
-
-        if (opt.isEmpty()) {
-            response.put("message", "Appointment not found");
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
-
-        Appointment appointment = opt.get();
-
-        // Extract patient ID from token
-         String identifier = tokenService.extractIdentifier(token);
-         Long tokenUserId = null;
-        try {
-            tokenUserId = Long.parseLong(identifier);
-        } catch (NumberFormatException e) {
-            // χειρισμός invalid id
-        return null;
-        }
-
-        if (!appointment.getPatient().getId().equals(tokenUserId)) {
-            response.put("message", "Unauthorized to cancel this appointment");
-            return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-        }
-
-        appointmentRepository.delete(appointment);
-
-        response.put("message", "Appointment canceled successfully");
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    Optional<Appointment> opt = appointmentRepository.findById(id);
+    if (opt.isEmpty()) {
+        response.put("message", "Appointment not found");
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
+    Appointment appointment = opt.get();
+
+    // Extract identifier from token (we store email as subject)
+    String identifier = tokenService.extractIdentifier(token);
+    if (identifier == null) {
+        response.put("message", "Invalid token");
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    // find patient by email
+    Optional<Patient> patientOpt = patientRepository.findByEmail(identifier);
+    if (patientOpt.isEmpty()) {
+        response.put("message", "Invalid token user");
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+    Long tokenUserId = patientOpt.get().getId();
+
+    if (!appointment.getPatient().getId().equals(tokenUserId)) {
+        response.put("message", "Unauthorized to cancel this appointment");
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    appointmentRepository.delete(appointment);
+
+    response.put("message", "Appointment canceled successfully");
+    return new ResponseEntity<>(response, HttpStatus.OK);
+}
+
+
     // -----------------------------------------------------
-    // GET APPOINTMENTS (doctor/date/patient filter)
+    // GET APPOINTMENT
     // -----------------------------------------------------
-    @Transactional(readOnly = true)
-    public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
-        Map<String, Object> result = new HashMap<>();
+@Transactional(readOnly = true)
+public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
+    Map<String, Object> result = new HashMap<>();
 
-        String identifier = tokenService.extractIdentifier(token);
-        Long doctorId = null;
-        try {
-            doctorId = Long.parseLong(identifier);
-        } catch (NumberFormatException e) {
-            // χειρισμός invalid id
-        return null;
-        }
-
-        LocalDateTime startOfDay = date.atStartOfDay();
-        LocalDateTime endOfDay = startOfDay.plusDays(1);
-
-        List<Appointment> appointments =
-                appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
-                        doctorId, startOfDay, endOfDay
-                );
-
-        // Filter by patient name
-        if (pname != null && !pname.trim().isEmpty()) {
-            appointments.removeIf(a ->
-                    !a.getPatient().getName().toLowerCase().contains(pname.toLowerCase())
-            );
-        }
-
-        result.put("appointments", appointments);
+    // extract identifier from token (this is the doctor's email in current token generation)
+    String identifier = tokenService.extractIdentifier(token);
+    if (identifier == null) {
+        result.put("appointments", Collections.emptyList());
         return result;
     }
+
+    // find doctor by email to obtain numeric id
+    Doctor doctor = doctorRepository.findByEmail(identifier);
+    if (doctor == null) {
+        result.put("appointments", Collections.emptyList());
+        return result;
+    }
+    Long doctorId = doctor.getId();
+
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+    List<Appointment> appointments =
+            appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
+                    doctorId, startOfDay, endOfDay
+            );
+
+    // Filter by patient name if provided
+    if (pname != null && !pname.trim().isEmpty()) {
+        String low = pname.toLowerCase();
+        appointments.removeIf(a -> a.getPatient() == null || !a.getPatient().getName().toLowerCase().contains(low));
+    }
+
+    // Optionally convert to DTOs — currently controllers expect Map with "appointments"
+    result.put("appointments", appointments);
+    return result;
+}
+
 
     // -----------------------------------------------------
     // CHANGE APPOINTMENT STATUS
