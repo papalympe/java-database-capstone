@@ -18,7 +18,11 @@ export async function getAllAppointments(date, patientName, token) {
         if (patientName) params.set('patientName', patientName);
         if (token) params.set('token', token);
 
-        const url = `${APPT_API}?${params.toString()}`;
+        // ✅ FIX: σωστό constant
+        const url = `${APPOINTMENT_API}?${params.toString()}`;
+
+        console.log("GET appointments:", url); // 👈 debug
+
         const res = await fetch(url, {
             method: 'GET',
             headers: {
@@ -32,13 +36,13 @@ export async function getAllAppointments(date, patientName, token) {
         }
 
         const data = await res.json();
-        // data should be { appointments: [...] }
         return data.appointments || [];
     } catch (err) {
         console.error('getAllAppointments error', err);
         return [];
     }
 }
+
 
 export async function bookAppointment(appointment, token) {
   try {
