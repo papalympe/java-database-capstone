@@ -1,24 +1,19 @@
-
-<!-- doctorDashboard.html -->
-
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <!-- Metadata -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" th:href="@{/assets/images/logo/logo.png}" />
 
-    <!-- Page Title -->
     <title>Doctor Dashboard</title>
 
-    <!-- Stylesheets -->
-    <link rel="stylesheet" th:href="@{/assets/css/admin/adminDashboard.css}">
-    <link rel="stylesheet" th:href="@{/assets/css/doctor/doctorDashboard.css}">
-    <link rel="stylesheet" th:href="@{/assets/css/style.css}">
+    <!-- Stylesheets (thymeleaf paths kept) -->
+    <link rel="stylesheet" th:href="@{/assets/css/admin/adminDashboard.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/doctor/doctorDashboard.css}" />
+    <link rel="stylesheet" th:href="@{/assets/css/style.css}" />
 
     <!-- JavaScript Files -->
     <script defer th:src="@{/assets/js/util/render.js}"></script>
@@ -32,10 +27,9 @@
     <!-- Services & Main Logic -->
     <script defer th:src="@{/assets/js/services/patientServices.js}"></script>
     <script type="module" defer th:src="@{/assets/js/doctor/doctorDashboard.js}"></script>
-
 </head>
 
-
+<body>
     <div class="container">
         <div class="wrapper">
 
@@ -43,14 +37,14 @@
             <div id="header"></div>
 
             <!-- Main Dashboard Section -->
-            <div class="main-content">
+            <main class="main-content">
 
-                <!-- Search Bar -->
-                <input 
-                    type="text" 
-                    id="searchBar" 
-                    class="searchBar" 
-                    placeholder="Search Bar for custom output" 
+                <!-- Search Bar (added both classes for compatibility) -->
+                <input
+                    type="text"
+                    id="searchBar"
+                    class="search-input searchBar"
+                    placeholder="Search patients or custom output"
                 />
 
                 <!-- Filter Controls -->
@@ -76,7 +70,7 @@
                     </tbody>
                 </table>
 
-            </div>
+            </main>
 
             <!-- Footer Injected Dynamically -->
             <div id="footer"></div>
