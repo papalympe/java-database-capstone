@@ -41,16 +41,6 @@ html, body {
   background-color: transparent !important;
 }
 
-/* Optional overlay for readability (comment out if you don't want) */
-/*
-.main-content::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.35);
-  pointer-events: none;
-}
-*/
 
 /* 3. SEARCH & FILTER STYLING */
 /* Support both class names admin used (.search-input) and local .searchBar */
