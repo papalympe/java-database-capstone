@@ -4,12 +4,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/png" href="/assets/images/logo/logo.png" />
   <title>Doctor Dashboard</title>
 
   <!-- Stylesheets: plain href (όχι th:href) -->
   <link rel="stylesheet" href="/assets/css/admin/adminDashboard.css">
   <link rel="stylesheet" href="/assets/css/doctor/doctorDashboard.css">
   <link rel="stylesheet" href="/assets/css/style.css">
+
+   <!-- Non-module scripts (helpers) -->
+    <script defer src="/js/util/render.js"></script>
+    <script defer src="/js/util/util.js"></script>
+
+  <!-- Components that are plain scripts (not modules) -->
+    <script defer src="/js/components/header.js"></script>
+    <script defer src="/js/components/footer.js"></script>
+    <!-- If patientRows.js uses export/import, load it as module below; else keep it here. -->
 </head>
 
 <body>
@@ -48,16 +58,15 @@
     </div>
   </div>
 
-  <!-- NB: use same pattern as adminDashboard: /js/... (no th:src) -->
-  <script src="/js/util/render.js" defer></script>
-  <script src="/js/util/util.js" defer></script>
+ 
 
-  <script src="/js/components/header.js" defer></script>
-  <script src="/js/components/footer.js" defer></script>
-  <script src="/js/components/patientRows.js" defer></script>
+ <!-- Module scripts (use type="module" when the file uses import/export) -->
+  <script type="module" defer src="/js/doctor/doctorDashboard.js"></script>
+  <script type="module" defer src="/js/components/patientRows.js"></script>
+  <script type="module" defer src="/js/services/patientServices.js"></script>
+  <script type="module" defer src="/js/services/appointmentRecordService.js"></script>
 
-  <script src="/js/services/patientServices.js" defer></script>
-  <!-- main doctor dashboard module -->
-  <script type="module" src="/js/doctorDashboard.js" defer></script>
+   <!-- Optional: modals loader (if not imported inside modules) -->
+  <script defer src="/js/components/modals.js"></script>
 </body>
 </html>
