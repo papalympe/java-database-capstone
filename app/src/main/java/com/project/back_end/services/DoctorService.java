@@ -5,7 +5,6 @@ import com.project.back_end.models.Doctor;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.repo.AppointmentRepository;
 import com.project.back_end.repo.DoctorRepository;
-import com.project.back_end.services.TokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -279,6 +278,8 @@ public class DoctorService {
                 Optional<LocalTime> parsed = extractStartLocalTime(tstr);
                 if (parsed.isEmpty()) continue;
                 LocalTime t = parsed.get();
+                // debug (remove in production)
+                // System.out.println("Doctor " + d.getId() + " start time parsed: " + t + " (checking " + (wantAM ? "AM" : "PM") + ")");
                 if (wantAM && t.isBefore(noon)) {
                     ok = true;
                     break;
@@ -306,19 +307,33 @@ public class DoctorService {
         if (timeStr == null) return Optional.empty();
         String trimmed = timeStr.trim();
 
-        // support "09:00-10:00" or "09:00 - 10:00"
-        if (trimmed.contains("-")) {
-            String[] parts = trimmed.split("-", 2);
+        // Accept unicode en-dash or hyphen
+        if (trimmed.contains("-") || trimmed.contains("–")) {
+            String[] parts = trimmed.split("[-–]", 2);
             trimmed = parts[0].trim();
         }
 
-        // support "to" forms: "9:00 to 10:00"
-        String lower = trimmed.toLowerCase();
-        if (lower.contains(" to ")) {
+        // support "to" forms: "9:00 to 10:00" (case-insensitive)
+        if (trimmed.toLowerCase().contains(" to ")) {
             trimmed = trimmed.split("(?i) to ")[0].trim();
         }
 
-        // fallback to parse the cleaned start token
+        // strip any trailing text beyond the time token (e.g. "09:00 (confirmed)")
+        if (trimmed.contains(" ")) {
+            // keep tokens that might include AM/PM (like "9:00 AM"), otherwise keep first token
+            String[] tokens = trimmed.split("\\s+");
+            if (tokens.length >= 2 && (tokens[1].equalsIgnoreCase("AM") || tokens[1].equalsIgnoreCase("PM"))) {
+                trimmed = tokens[0] + " " + tokens[1];
+            } else {
+                trimmed = tokens[0];
+            }
+        }
+
+        // handle "HH:mm:ss" -> "HH:mm"
+        if (trimmed.matches("^\\d{2}:\\d{2}:\\d{2}.*$")) {
+            trimmed = trimmed.substring(0, 5);
+        }
+
         return parseToLocalTime(trimmed);
     }
 
