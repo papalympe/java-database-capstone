@@ -1,14 +1,11 @@
-// /src/main/resources/static/js/doctorDashboard.js
-// Doctor dashboard client logic (module)
-
-import { getAllAppointments } from "./services/appointmentRecordService.js";
-import { createPatientRow } from "./components/patientRows.js";
+// /js/doctor/doctorDashboard.js
+import { getAllAppointments } from "/js/services/appointmentRecordService.js";
+import { createPatientRow } from "/js/components/patientRows.js";
 
 /*
   This file expects:
    - token stored in localStorage.token
    - user role to be "doctor" in localStorage.userRole
-   - getAllAppointments(date, name, token) to return an array of appointment objects
 */
 
 let tableBody;
@@ -94,7 +91,8 @@ async function loadAppointments() {
         email: appt.patientEmail,
       };
 
-      const row = createPatientRow(patient, appt);
+      // pass appointment id and doctor id correctly
+      const row = createPatientRow(patient, appt.id, appt.doctorId);
       tableBody.appendChild(row);
     });
 
