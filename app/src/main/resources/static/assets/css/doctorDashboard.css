@@ -21,9 +21,7 @@ html, body {
   min-height: 100vh;
 }
 
-/* === BACKGROUND IMAGE - force it, use existing image path.
-   Use the defineRole image you listed; if you prefer a different
-   one replace the URL below with '/assets/images/index/index.png' etc. === */
+/* MAIN CONTENT AREA */
 .main-content {
   flex-grow: 1;
   padding: 40px;
@@ -32,13 +30,11 @@ html, body {
   align-items: center;
   text-align: center;
 
-  background-image: url('/assets/images/defineRole/index.png') !important;
-  background-size: cover !important;
-  background-position: center !important;
-  background-repeat: no-repeat !important;
-  background-attachment: fixed !important;
-  /* ensure no white overlay unless intended */
-  background-color: transparent !important;
+  background-image: url('/assets/images/defineRole/index.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 
