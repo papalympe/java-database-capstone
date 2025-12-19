@@ -75,7 +75,14 @@ window.doctorLoginHandler = async function () {
     });
 
     if (!response.ok) {
-      alert('Invalid credentials!');
+      // try to surface backend message if present
+      let msg = 'Invalid credentials!';
+      try {
+        const obj = await response.json();
+        if (obj?.message) msg = obj.message;
+        else if (obj?.error) msg = obj.error;
+      } catch (_) {}
+      alert(msg);
       return;
     }
 
@@ -83,6 +90,7 @@ window.doctorLoginHandler = async function () {
     localStorage.setItem('token', data.token);
     localStorage.setItem('userRole', 'doctor');
 
+    // navigate to server-protected page (server/controller will validate token)
     window.location.href = `/doctorDashboard/${encodeURIComponent(data.token)}`;
 
   } catch (error) {
