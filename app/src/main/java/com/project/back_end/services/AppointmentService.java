@@ -155,43 +155,45 @@ public class AppointmentService {
     // -----------------------------------------------------
     @Transactional(readOnly = true)
     public Map<String, Object> getAppointment(String pname, LocalDate date, String token) {
+
     Map<String, Object> result = new HashMap<>();
 
     String identifier = tokenService.extractIdentifier(token);
     if (identifier == null) {
-        return Map.of("appointments", List.of());
+        result.put("appointments", List.of());
+        return result;
     }
 
-    Long doctorId = null;
-    // Try parse as long (if token carries id), otherwise treat as email and lookup doctor
-    try {
-        doctorId = Long.parseLong(identifier);
-    } catch (NumberFormatException e) {
-        // not numeric -> lookup doctor by email
-        Doctor doc = doctorRepository.findByEmail(identifier);
-        if (doc == null) {
-            return Map.of("appointments", List.of());
-        }
-        doctorId = doc.getId();
+    Doctor doctor = doctorRepository.findByEmail(identifier);
+    if (doctor == null) {
+        result.put("appointments", List.of());
+        return result;
     }
 
-    java.time.LocalDateTime startOfDay = date.atStartOfDay();
-    java.time.LocalDateTime endOfDay = startOfDay.plusDays(1);
+    LocalDateTime startOfDay = date.atStartOfDay();
+    LocalDateTime endOfDay = startOfDay.plusDays(1);
 
     List<Appointment> appointments =
             appointmentRepository.findByDoctorIdAndAppointmentTimeBetween(
-                    doctorId, startOfDay, endOfDay
+                    doctor.getId(), startOfDay, endOfDay
             );
 
-    // Filter by patient name if provided
     if (pname != null && !pname.trim().isEmpty()) {
         String pnameLower = pname.toLowerCase();
-        appointments.removeIf(a -> a.getPatient() == null || !a.getPatient().getName().toLowerCase().contains(pnameLower));
+        appointments.removeIf(a ->
+                a.getPatient() == null ||
+                !a.getPatient().getName().toLowerCase().contains(pnameLower)
+        );
     }
 
-    result.put("appointments", appointments);
+    List<AppointmentDTO> dtos = appointments.stream()
+            .map(AppointmentDTO::new)
+            .toList();
+
+    result.put("appointments", dtos);
     return result;
 }
+
 
 
 
