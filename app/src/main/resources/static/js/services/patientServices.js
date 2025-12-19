@@ -1,4 +1,4 @@
-// patientServices.js
+// /js/services/patientServices.js
 
 // Import API Base URL
 import { API_BASE_URL } from "../config/config.js";
@@ -55,23 +55,18 @@ export async function patientLogin(data) {
     }
 }
 
-/**
- * Fetch logged-in patient details
- * @param {string} token - Auth token
- * @returns {Object|null} - Patient data or null on failure
- */
+// Fetch logged-in patient details (backend: GET /patient/{token})
 export async function getPatientData(token) {
     try {
-        const response = await fetch(`${PATIENT_API}/me?token=${token}`, {
+        const response = await fetch(`${PATIENT_API}/${encodeURIComponent(token)}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
-
         if (!response.ok) return null;
-
         const data = await response.json();
-        return data.patient;
-
+        // backend returns the patient info in the top-level map (id,name,email,phone,address)
+        // so return that object
+        return data;
     } catch (error) {
         console.error("Error fetching patient data:", error);
         return null;
@@ -79,27 +74,21 @@ export async function getPatientData(token) {
 }
 
 /**
- * Fetch appointments for patient or doctor
- * @param {string} id - Patient ID
- * @param {string} token - Auth token
- * @param {string} user - "patient" or "doctor"
- * @returns {Array|null} - Appointment list or null
+ * Fetch appointments for patient (backend: GET /patient/{id}/{token})
+ * If user === "doctor" you can still call the same endpoint if backend expects it; here use mapping to controller.
  */
 export async function getPatientAppointments(id, token, user) {
     try {
-        const response = await fetch(
-            `${PATIENT_API}/appointments/${user}/${id}?token=${token}`,
-            { method: "GET", headers: { "Content-Type": "application/json" } }
-        );
-
+        const response = await fetch(`${PATIENT_API}/${encodeURIComponent(id)}/${encodeURIComponent(token)}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
         if (!response.ok) {
-            console.error("Failed to fetch appointments.");
+            console.error("Failed to fetch appointments.", response.status);
             return null;
         }
-
         const data = await response.json();
         return data.appointments || [];
-
     } catch (error) {
         console.error("Error fetching appointments:", error);
         return null;
@@ -107,21 +96,17 @@ export async function getPatientAppointments(id, token, user) {
 }
 
 /**
- * Filter Appointments
- * @param {string} condition - "pending", "consulted", etc.
- * @param {string} name - Doctor or patient name
- * @param {string} token - Auth token
- * @returns {Array} - Filtered appointment list
+ * Filter Appointments (backend mapping: /patient/filter/{condition}/{name}/{token})
  */
 export async function filterAppointments(condition, name, token) {
     try {
         const response = await fetch(
-            `${PATIENT_API}/appointments/filter/${condition}/${encodeURIComponent(name)}?token=${token}`,
+            `${PATIENT_API}/filter/${encodeURIComponent(condition || "")}/${encodeURIComponent(name || "")}/${encodeURIComponent(token)}`,
             { method: "GET", headers: { "Content-Type": "application/json" } }
         );
 
         if (!response.ok) {
-            console.error("Failed to filter appointments");
+            console.error("Failed to filter appointments", response.status);
             return [];
         }
 
@@ -130,7 +115,6 @@ export async function filterAppointments(condition, name, token) {
 
     } catch (error) {
         console.error("Error filtering appointments:", error);
-        alert("Unable to filter appointments at this moment.");
         return [];
     }
 }
