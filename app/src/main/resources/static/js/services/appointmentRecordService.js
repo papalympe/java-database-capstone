@@ -1,16 +1,43 @@
-// appointmentRecordService.js
+// src/main/resources/static/js/services/appointmentRecordService.js
 import { API_BASE_URL } from "../config/config.js";
 const APPOINTMENT_API = `${API_BASE_URL}/appointments`;
 
 
 //This is for the doctor to get all the patient Appointments
+/**
+ * Get all appointments for a doctor for a date, optional patientName filter
+ * @param {string} date - yyyy-MM-dd
+ * @param {string|null} patientName
+ * @param {string} token
+ * @returns {Array} - appointments array (objects)
+ */
 export async function getAllAppointments(date, patientName, token) {
-  const response = await fetch(`${APPOINTMENT_API}/${date}/${patientName}/${token}`);
-  if (!response.ok) {
-    throw new Error("Failed to fetch appointments");
-  }
+    try {
+        const params = new URLSearchParams();
+        if (date) params.set('date', date);
+        if (patientName) params.set('patientName', patientName);
+        if (token) params.set('token', token);
 
-  return await response.json();
+        const url = `${APPT_API}?${params.toString()}`;
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!res.ok) {
+            console.error('getAllAppointments failed', res.status, res.statusText);
+            return [];
+        }
+
+        const data = await res.json();
+        // data should be { appointments: [...] }
+        return data.appointments || [];
+    } catch (err) {
+        console.error('getAllAppointments error', err);
+        return [];
+    }
 }
 
 export async function bookAppointment(appointment, token) {
