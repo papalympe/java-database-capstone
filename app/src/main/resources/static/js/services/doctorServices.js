@@ -30,15 +30,10 @@ export async function getDoctors() {
     }
 }
 
-/**
- * Delete a doctor by ID
- * @param {string} id - Doctor ID
- * @param {string} token - Admin authentication token
- * @returns {Object} - { success: boolean, message: string }
- */
 export async function deleteDoctor(id, token) {
     try {
-        const url = `${DOCTOR_API}/${id}?token=${token}`;
+        // backend expects DELETE /doctor/{id}/{token}
+        const url = `${DOCTOR_API}/${encodeURIComponent(id)}/${encodeURIComponent(token)}`;
         const response = await fetch(url, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' }
@@ -55,15 +50,10 @@ export async function deleteDoctor(id, token) {
     }
 }
 
-/**
- * Save (add) a new doctor
- * @param {Object} doctor - Doctor object containing details
- * @param {string} token - Admin authentication token
- * @returns {Object} - { success: boolean, message: string }
- */
 export async function saveDoctor(doctor, token) {
     try {
-        const url = `${DOCTOR_API}?token=${token}`;
+        // backend expects POST /doctor/{token}
+        const url = `${DOCTOR_API}/${encodeURIComponent(token)}`;
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -80,6 +70,27 @@ export async function saveDoctor(doctor, token) {
         return { success: false, message: 'An error occurred while saving the doctor.' };
     }
 }
+
+export async function updateDoctor(doctor, token) {
+    try {
+        const url = `${DOCTOR_API}/${encodeURIComponent(token)}`;
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(doctor)
+        });
+
+        const data = await response.json().catch(()=>({}));
+        return {
+            success: response.ok,
+            message: data.message || (response.ok ? 'Doctor updated' : 'Failed to update doctor')
+        };
+    } catch (error) {
+        console.error('Error updating doctor:', error);
+        return { success: false, message: 'An error occurred while updating the doctor.' };
+    }
+}
+
 
 /**
  * Filter doctors based on criteria
