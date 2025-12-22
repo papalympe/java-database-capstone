@@ -233,3 +233,19 @@ button:hover {
         width: 85%;
     }
 }
+
+
+#addDocBtn,
+.adminBtn#addDocBtn {
+  background-color: #f4f4f4 !important;  /* ίδιο με το default */
+  color: #333 !important;                /* σκούρο κείμενο, αναγνώσιμο */
+  border: none !important;
+  box-shadow: none !important;
+}
+
+#addDocBtn:hover, .adminBtn#addDocBtn:hover {
+  background-color: #f4f4f4 !important;
+  color: #333 !important;
+}
+
+
