@@ -181,4 +181,81 @@ html, body {
   .table-header {
     font-size: 20px;
   }
+
+   /* =========================
+   Fixes: footer stick + today button + safety overrides
+   Προσθήκη στο τέλος του style.css
+   ========================= */
+
+/* 1) Ensure the page wrapper pushes footer to the bottom */
+.wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+}
+
+/* Make footer sit after content (sticky to bottom of viewport when content short) */
+.footer {
+  margin-top: auto !important;
+  position: relative !important;
+  bottom: 0;
+  color: #0a0a23 !important;          /* σκοτεινό χρώμα για να φαίνεται πάνω στο ανοιχτό background */
+  background-color: #f4f4f4 !important;
+  padding: 24px 20px !important;
+  border-top: 1px solid #e0e0e0 !important;
+}
+
+/* Footer internal layout safe-guards */
+.footer-container {
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+}
+
+/* 2) Today button styling override (εξασφαλίζει ότι το κείμενο μένει ΜΕΣΑ) */
+.filters .adminBtn#todayButton,
+.filters .adminBtn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  width: auto !important;
+  min-width: 130px !important;
+  padding: 10px 16px !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  overflow: visible !important;
+}
+
+/* If some global rule forces button width, this will neutralize it */
+button[style], .adminBtn[style] { width: auto !important; }
+
+/* 3) Extra: ensure patient-table header/cells spacing consistent across patientRecord & doctor pages */
+.patient-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  overflow: hidden !important;
+  background: rgba(255,255,255,0.95) !important;
+  border-radius: 8px !important;
+}
+
+.patient-table thead th,
+.patient-table tbody td {
+  padding: 12px 16px !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+}
+
+/* 4) Small accessibility / visual niceties */
+.patient-table thead th {
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* 5) Defensive: if some old rule hides footer text (color white on white bg) */
+.footer, .footer * {
+  color: #0a0a23 !important;
+}
+
+   
+   
 }
