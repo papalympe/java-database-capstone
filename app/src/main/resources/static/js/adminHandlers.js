@@ -1,10 +1,7 @@
-// app/src/main/resources/static/js/adminHandlers.js
-// Non-module so it attaches a global function that modals.safeBind can call.
-
+// adminHandlers.js  (non-module)
 (function () {
   "use strict";
 
-  // adminAddDoctor -> called by modals.safeBind("#saveDoctorBtn","adminAddDoctor")
   window.adminAddDoctor = async function adminAddDoctor() {
     try {
       const nameEl = document.getElementById("doctorName");
@@ -22,26 +19,26 @@
         alert("Please fill all fields.");
         return;
       }
-
       if (password.length < 6) {
         alert("Password must be at least 6 characters.");
         return;
       }
 
-      // simple UI feedback
+      // get admin token from localStorage (required by backend)
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Admin token missing. Please login as admin before adding a doctor.");
+        return;
+      }
+
+      // disable button / feedback
       if (saveBtn) {
         saveBtn.disabled = true;
         saveBtn.dataset.origText = saveBtn.textContent;
         saveBtn.textContent = "Saving...";
       }
 
-      // token (admin) if present in localStorage
-      const token = localStorage.getItem("token") || "";
-
-      // Endpoint: match doctorServices.saveDoctor -> `${DOCTOR_API}?token=${token}`
-      // If your backend uses a prefix (e.g. /api/doctor) update this url accordingly.
-      const url = token ? `/doctor?token=${encodeURIComponent(token)}` : `/doctor`;
-
+      const url = `/doctor/${encodeURIComponent(token)}`; // <-- path variable expected by backend
       const payload = { name, specialty, email, password };
 
       let res, data;
@@ -51,7 +48,6 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        // try parse json
         data = await res.json().catch(() => ({}));
       } catch (fetchErr) {
         console.error("adminAddDoctor fetch error:", fetchErr);
@@ -62,22 +58,22 @@
 
       if (res.ok) {
         alert(data.message || "Doctor added successfully.");
-        // close modal if present
+        // close modal
         const modal = document.getElementById("modal");
         if (modal) {
           modal.style.display = "none";
           modal.setAttribute("aria-hidden", "true");
           document.body.style.overflow = "";
         }
-        // Best-effort refresh: try to trigger a refresh event for admin page
-        // If adminDashboard has a global function to reload, it will run; otherwise reload page.
+        // try to refresh doctor list gracefully
         if (typeof window.loadDoctorCards === "function") {
-          try { window.loadDoctorCards(); } catch(e) { window.location.reload(); }
+          try { window.loadDoctorCards(); } catch (e) { window.location.reload(); }
         } else {
           window.location.reload();
         }
       } else {
-        const errMsg = data.error || data.message || `Failed to add doctor (${res.status})`;
+        // show backend error (405 / 400 / 409 etc.)
+        const errMsg = data.error || data.message || `Failed to add doctor (status ${res.status}).`;
         alert(errMsg);
         console.warn("adminAddDoctor failed:", res.status, data);
       }
