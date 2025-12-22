@@ -69,6 +69,7 @@ html, body {
 /* Ensure adminBtn style (global) applies but we tighten appearance for doctor */
 .adminBtn,
 .today-btn {
+  display: inline-flex; 
   white-space: nowrap; 
   min-width: 150px; 
   background-color: #015c5d;
