@@ -180,31 +180,40 @@ html, body {
     }
 }
 
-/* ----- Patient Appointments table fixes ----- */
+/* ---------- Patient Appointments table (fixed) ---------- */
+/* wrapper for overflow on small screens */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* base table */
 #patientTable {
   width: 100%;
   border-collapse: collapse;
-  table-layout: auto;  /* allow natural column widths */
+  table-layout: auto;      /* allow columns to size naturally */
   background: rgba(255,255,255,0.98);
   margin-top: 20px;
-  overflow-x: auto;
+  font-family: inherit;
 }
 
-/* ensure row/thead use table display (in case some global rule overrides it) */
-#patientTable thead, 
-#patientTable tbody, 
-#patientTable tr {
-  display: table-row-group;
-  width: 100%;
-}
+/* restore correct table element displays (override any broken global rules) */
+#patientTable { display: table !important; }
+#patientTable thead { display: table-header-group !important; }
+#patientTable tbody { display: table-row-group !important; }
+#patientTable tr { display: table-row !important; }
+#patientTable th, 
+#patientTable td { display: table-cell !important; }
 
+/* cell spacing / look */
 #patientTable th,
 #patientTable td {
-  display: table-cell;
   padding: 12px 16px;
   border-bottom: 1px solid #e6e6e6;
   vertical-align: middle;
   white-space: nowrap;
+  word-break: keep-all;
 }
 
 /* header style */
@@ -215,34 +224,37 @@ html, body {
   background: rgba(1,92,93,0.06);
 }
 
-/* first two columns (names) left aligned for readability */
-#patientTable th:nth-child(1),
+/* sensible column widths (adjust % if you want other ratios) */
+#patientTable thead th:nth-child(1) { width: 28%; text-align: left; }
+#patientTable thead th:nth-child(2) { width: 28%; text-align: left; }
+#patientTable thead th:nth-child(3) { width: 16%; text-align: center; }
+#patientTable thead th:nth-child(4) { width: 14%; text-align: center; }
+#patientTable thead th:nth-child(5) { width: 14%; text-align: center; }
+
+/* make name columns left-aligned for readability */
 #patientTable td:nth-child(1),
-#patientTable th:nth-child(2),
-#patientTable td:nth-child(2) {
-  text-align: left;
-}
+#patientTable td:nth-child(2) { text-align: left; }
 
-/* date/time center */
-#patientTable th:nth-child(3),
-#patientTable td:nth-child(3),
-#patientTable th:nth-child(4),
-#patientTable td:nth-child(4) {
-  text-align: center;
-}
-
-/* actions column */
-#patientTable th:nth-child(5),
+/* actions small, centered */
 #patientTable td:nth-child(5) {
   text-align: center;
-  width: 120px;
 }
 
-/* Responsive: allow table to scroll horizontally on small screens */
+/* responsive behaviour: allow scroll on very small screens */
 @media (max-width: 768px) {
-  .main-content { padding: 20px; }
-  #patientTable th, #patientTable td { padding: 10px 8px; font-size: 14px; }
-  #patientTable { display: block; overflow-x: auto; white-space: nowrap; }
+  #patientTable th, #patientTable td {
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+
+  /* keep table inside responsive wrapper */
+  #patientTable { display: table; min-width: 720px; } /* so horizontal scroll appears */
 }
+
+
+
+
+
+
 
 
