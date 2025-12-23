@@ -303,7 +303,7 @@ public class DoctorService {
      *  - "9:00 AM - 10:00 AM" -> parse "9:00 AM"
      *  - "09:00" -> parse "09:00"
      */
-    private Optional<LocalTime> extractStartLocalTime(String timeStr) {
+    public  Optional<LocalTime> extractStartLocalTime(String timeStr) {
         if (timeStr == null) return Optional.empty();
         String trimmed = timeStr.trim();
 
