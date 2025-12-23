@@ -35,25 +35,28 @@ export async function patientSignup(data) {
     }
 }
 
-/**
- * Patient Login
- * @param {Object} data - Login credentials (email, password)
- * @returns {Response} - Raw fetch response for token extraction
- */
+// Patient Login
 export async function patientLogin(data) {
     try {
+        // Normalize payload: backend expects { identifier, password }
+        const payload = {
+            identifier: data.email ?? data.identifier ?? "",
+            password: data.password
+        };
+
         const response = await fetch(`${PATIENT_API}/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         });
 
-        return response; // frontend will handle token & status
+        return response; // frontend handles token & status
     } catch (error) {
         console.error("Login error:", error);
         return null;
     }
 }
+
 
 // Fetch logged-in patient details (backend: GET /patient/{token})
 export async function getPatientData(token) {
