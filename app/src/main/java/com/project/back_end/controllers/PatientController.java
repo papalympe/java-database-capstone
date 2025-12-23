@@ -1,5 +1,7 @@
 package com.project.back_end.controllers;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.project.back_end.DTO.Login;
 import com.project.back_end.models.Patient;
 import com.project.back_end.services.PatientService;
@@ -65,18 +67,30 @@ public class PatientController {
         return patientService.getPatientAppointment(id, token);
     }
 
-    @GetMapping("/filter/{condition}/{name}/{token}")
+    /**
+     * New: filter using query parameters to avoid path-variable issues when values are empty.
+     * Example requests:
+     *  GET /patient/filter?token=...                          -> all appointments
+     *  GET /patient/filter?condition=future&token=...        -> upcoming
+     *  GET /patient/filter?name=john&token=...               -> search by doctor name
+     *  GET /patient/filter?condition=past&name=john&token=...-> combined
+     */
+    @GetMapping("/filter")
     public ResponseEntity<Map<String, Object>> filterPatientAppointment(
-            @PathVariable String condition,
-            @PathVariable String name,
-            @PathVariable String token) {
+            @RequestParam(required = false) String condition,
+            @RequestParam(required = false) String name,
+            @RequestParam String token) {
 
+        // Validate token first
         ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "patient");
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode())
                     .body(Map.of("error", "Unauthorized or invalid token"));
         }
 
+        // Delegate to service manager (it expects the token)
         return serviceManager.filterPatient(condition, name, token);
     }
+
+    
 }
