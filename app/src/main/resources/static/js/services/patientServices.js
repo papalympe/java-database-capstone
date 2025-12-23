@@ -98,26 +98,36 @@ export async function getPatientAppointments(id, token, user) {
     }
 }
 
-/**
- * Filter Appointments (backend mapping: /patient/filter/{condition}/{name}/{token})
- */
 export async function filterAppointments(condition, name, token) {
-    try {
-        const response = await fetch(
-            `${PATIENT_API}/filter/${encodeURIComponent(condition || "")}/${encodeURIComponent(name || "")}/${encodeURIComponent(token)}`,
-            { method: "GET", headers: { "Content-Type": "application/json" } }
-        );
+  try {
+    const params = new URLSearchParams();
 
-        if (!response.ok) {
-            console.error("Failed to filter appointments", response.status);
-            return [];
+    if (condition) params.append("condition", condition);
+    if (name) params.append("name", name);
+
+    const response = await fetch(
+      `${PATIENT_API}/filter?${params.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
         }
+      }
+    );
 
-        const data = await response.json();
-        return data.appointments || [];
-
-    } catch (error) {
-        console.error("Error filtering appointments:", error);
-        return [];
+    if (!response.ok) {
+      console.error("Failed to filter appointments", response.status);
+      return [];
     }
+
+    const data = await response.json();
+    return data.appointments || [];
+
+  } catch (error) {
+    console.error("Error filtering appointments:", error);
+    return [];
+  }
 }
+
+
