@@ -92,13 +92,15 @@ async function handleFilterChange() {
   const condition = filterValue === "allAppointments" ? null : filterValue || null;
 
   try {
+    // filterAppointments now returns an array
     const appointments = await filterAppointments(condition, name, token);
-    filteredAppointments = appointments.filter(app => app.patientId === patientId);
-
+    // narrow down to this patient
+    filteredAppointments = (appointments || []).filter(app => Number(app.patientId) === Number(patientId));
     renderAppointments(filteredAppointments);
   } catch (error) {
     console.error("Failed to filter appointments:", error);
     alert("❌ An error occurred while filtering appointments.");
   }
 }
+
 
