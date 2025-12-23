@@ -104,7 +104,6 @@ window.signupPatient = async function () {
   try {
     const payload = {
       name: document.getElementById("name").value.trim(),
-      : document.getElementById("").value.trim(),
       password: document.getElementById("password").value.trim(),
       phone: document.getElementById("phone").value.trim(),
       address: document.getElementById("address").value.trim(),
