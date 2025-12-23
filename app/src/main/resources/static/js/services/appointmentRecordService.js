@@ -1,16 +1,7 @@
-// src/main/resources/static/js/services/appointmentRecordService.js
 import { API_BASE_URL } from "../config/config.js";
 const APPOINTMENT_API = `${API_BASE_URL}/appointments`;
 
-
-//This is for the doctor to get all the patient Appointments
-/**
- * Get all appointments for a doctor for a date, optional patientName filter
- * @param {string} date - yyyy-MM-dd
- * @param {string|null} patientName
- * @param {string} token
- * @returns {Array} - appointments array (objects)
- */
+// Get all appointments (unchanged)
 export async function getAllAppointments(date, patientName, token) {
     try {
         const params = new URLSearchParams();
@@ -18,10 +9,9 @@ export async function getAllAppointments(date, patientName, token) {
         if (patientName) params.set('patientName', patientName);
         if (token) params.set('token', token);
 
-        // ✅ FIX: σωστό constant
         const url = `${APPOINTMENT_API}?${params.toString()}`;
 
-        console.log("GET appointments:", url); // 👈 debug
+        console.log("GET appointments:", url);
 
         const res = await fetch(url, {
             method: 'GET',
@@ -46,7 +36,17 @@ export async function getAllAppointments(date, patientName, token) {
 
 export async function bookAppointment(appointment, token) {
   try {
-    const response = await fetch(`${APPOINTMENT_API}/${token}`, {
+    if (!token) {
+      return { success: false, message: "Missing token" };
+    }
+
+    // encode token for safe URL (JWT has dots and other chars)
+    const safeToken = encodeURIComponent(token);
+    const url = `${APPOINTMENT_API}/${safeToken}`;
+
+    console.log("POST booking ->", url, appointment);
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -54,10 +54,23 @@ export async function bookAppointment(appointment, token) {
       body: JSON.stringify(appointment)
     });
 
-    const data = await response.json();
+    // Try to parse JSON body safely
+    let data = null;
+    try {
+      data = await response.json();
+    } catch (err) {
+      console.warn("bookAppointment: response body not JSON", err);
+    }
+
+    if (!response.ok) {
+      const msg = (data && (data.error || data.message)) || `${response.status} ${response.statusText}`;
+      console.error("bookAppointment failed:", response.status, msg, data);
+      return { success: false, message: msg };
+    }
+
     return {
-      success: response.ok,
-      message: data.message || "Something went wrong"
+      success: true,
+      message: (data && (data.message || "Appointment booked")) || "Appointment booked"
     };
   } catch (error) {
     console.error("Error while booking appointment:", error);
@@ -70,7 +83,9 @@ export async function bookAppointment(appointment, token) {
 
 export async function updateAppointment(appointment, token) {
   try {
-    const response = await fetch(`${APPOINTMENT_API}/${token}`, {
+    if (!token) return { success: false, message: "Missing token" };
+    const safeToken = encodeURIComponent(token);
+    const response = await fetch(`${APPOINTMENT_API}/${safeToken}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
@@ -78,13 +93,20 @@ export async function updateAppointment(appointment, token) {
       body: JSON.stringify(appointment)
     });
 
-    const data = await response.json();
+    let data = null;
+    try { data = await response.json(); } catch(_) {}
+
+    if (!response.ok) {
+      const msg = (data && (data.error || data.message)) || `${response.status} ${response.statusText}`;
+      return { success: false, message: msg };
+    }
+
     return {
-      success: response.ok,
-      message: data.message || "Something went wrong"
+      success: true,
+      message: data?.message || "Appointment updated"
     };
   } catch (error) {
-    console.error("Error while booking appointment:", error);
+    console.error("Error while updating appointment:", error);
     return {
       success: false,
       message: "Network error. Please try again later."
