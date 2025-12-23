@@ -4,11 +4,11 @@
 
 <head>
   <meta charset="UTF-8">
-  <link rel="icon" type="image/svg+xml" href="../assets/images/logo/logo.png" />
+  <link rel="icon" type="image/svg+xml" href="/assets/images/logo/logo.png" />
   <title>Patient Appointments</title>
-  <link rel="stylesheet" href="../assets/css/adminDashboard.css">
-  <link rel="stylesheet" href="../assets/css/doctorDashboard.css">
-  <link rel="stylesheet" href="../assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/adminDashboard.css">
+  <link rel="stylesheet" href="/assets/css/doctorDashboard.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
   <script src="../js/render.js" defer></script>
   <script src="../js/util.js" defer></script>
   <script src="../js/components/header.js" defer></script>
@@ -21,6 +21,8 @@
     <div class="wrapper">
       <div id="header"></div>
       <div class="main-content">
+        <!-- inputs wrapper: keep title + search + filters centered -->
+        <div class="inputs-wrapper">
         <h2>Patient <span>Appointment</span></h2>
         <input type="text" id="searchBar" class="searchBar" placeholder="Search Bar for custom output" />
                 <div class="filter-wrapper">
@@ -30,8 +32,10 @@
                         <option value="past">Past Appointments</option>
                     </select>
                 </div>
+          </div>
+        <!-- table container stretches full width even though main-content is centered -->
         <div class="table-container">
-        <table id="patientTable">
+        <table id="patientTable" class="patient-table">
           <thead class="table-header">
             <tr>
               <th>Patient Name</th>
@@ -46,9 +50,9 @@
           </tbody>
         </table>
        </div>   
+      </div>  
       <div id="footer"></div>
     </div>
   </div>
-</div>   
 </body>
 </html>
