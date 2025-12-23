@@ -130,14 +130,14 @@ window.signupPatient = async function () {
 };
 
 // -------------------------------------------------------
-// 🔹 PATIENT LOGIN HANDLER
+// 🔹 PATIENT LOGIN HANDLER used by modal
 // -------------------------------------------------------
 window.loginPatient = async function () {
     const email = document.getElementById("loginEmail").value.trim();
     const password = document.getElementById("loginPassword").value.trim();
 
     try {
-        const response = await patientLogin({ email, password });
+        const response = await patientLogin({ identifier: email, password });
 
         if (response.status === 200) {
             const data = await response.json();
