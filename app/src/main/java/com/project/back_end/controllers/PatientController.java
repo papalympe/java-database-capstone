@@ -92,5 +92,27 @@ public class PatientController {
         return serviceManager.filterPatient(condition, name, token);
     }
 
+/**
+ * GET appointments for patient (doctor view).
+ * URL: /patient/doctor/{id}/{token}
+ * Validates the token as doctor; if valid, returns patient's appointments.
+ */
+@GetMapping("/doctor/{id}/{token}")
+public ResponseEntity<Map<String, Object>> getPatientAppointmentForDoctor(
+        @PathVariable Long id,
+        @PathVariable String token) {
+
+    // validate token as doctor
+    ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
+    if (tokenValidation.getStatusCode().is4xxClientError()) {
+        return ResponseEntity.status(tokenValidation.getStatusCode())
+                .body(Map.of("error", "Unauthorized or invalid token"));
+    }
+
+    // controller validated caller is a doctor; return appointments for patient id
+    return patientService.getPatientAppointmentsForDoctor(id);
+}
+    
+
     
 }
