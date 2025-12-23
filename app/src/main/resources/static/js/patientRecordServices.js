@@ -15,6 +15,9 @@ async function initializePage() {
   try {
     if (!token) throw new Error("No token found");
 
+    // Debug: show the token we will send to backend (doctor token expected)
+    console.log("Doctor token (from localStorage):", token);
+
     const appointmentData = await getPatientAppointments(patientId, token, "doctor") || [];
 
     // Filter by both patientId and doctorId
