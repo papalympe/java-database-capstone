@@ -17,8 +17,6 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadDoctorCards() {
     try {
         const raw = await getDoctors();
-
-        // Normalize response: accept array OR { doctors: [...] } OR nested shapes
         const doctors = normalizeDoctorsResponse(raw);
 
         const contentDiv = document.getElementById("content");
@@ -41,7 +39,6 @@ async function loadDoctorCards() {
     }
 }
 
-// Attach listeners defensively (elements exist in your HTML)
 document.getElementById("searchBar")?.addEventListener("input", filterDoctorsOnChange);
 document.getElementById("filterTime")?.addEventListener("change", filterDoctorsOnChange);
 document.getElementById("filterSpecialty")?.addEventListener("change", filterDoctorsOnChange);
@@ -53,7 +50,6 @@ async function filterDoctorsOnChange() {
 
     try {
         const raw = await filterDoctors(name, time, specialty);
-
         const doctors = normalizeDoctorsResponse(raw);
 
         const contentDiv = document.getElementById("content");
@@ -74,7 +70,6 @@ async function filterDoctorsOnChange() {
         });
     } catch (error) {
         console.error("Filter error:", error);
-        // helpful debug output for you while developing
         alert("Error filtering doctors. See console for details.");
     }
 }
@@ -82,30 +77,18 @@ async function filterDoctorsOnChange() {
 // Helper: normalize different response shapes to an array of doctors
 function normalizeDoctorsResponse(raw) {
     if (!raw) return [];
-    // if it's already an array
     if (Array.isArray(raw)) return raw;
-
-    // common shape: { doctors: [...] }
     if (Array.isArray(raw.doctors)) return raw.doctors;
-
-    // nested: { data: { doctors: [...] } }
     if (raw.data && Array.isArray(raw.data.doctors)) return raw.data.doctors;
-
-    // sometimes server returns { doctors: { doctors: [...] } } — try deeper
     if (raw.doctors && typeof raw.doctors === 'object') {
         for (const k of Object.keys(raw.doctors)) {
             if (Array.isArray(raw.doctors[k])) return raw.doctors[k];
         }
     }
-
-    // if one of the top-level properties is an array, return first array found
     for (const k of Object.keys(raw)) {
         if (Array.isArray(raw[k])) return raw[k];
     }
-
-    // fallback: if raw looks like a single doctor object, wrap it
     if (raw.name || raw.email) return [raw];
-
     return [];
 }
 
@@ -141,8 +124,11 @@ window.loginPatient = window.loginPatient || async function () {
         const response = await patientLogin({ identifier: email, password });
         if (response && response.status === 200) {
             const data = await response.json();
+
+            // Standardized storage so other components detect the logged-in patient
             localStorage.setItem("token", data.token);
-            localStorage.setItem("userRole", "patient");
+            localStorage.setItem("userRole", "loggedPatient");
+
             alert("Login successful!");
             window.location.href = "/pages/loggedPatientDashboard.html";
         } else {
