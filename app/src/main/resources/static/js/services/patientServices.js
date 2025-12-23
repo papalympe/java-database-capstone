@@ -77,19 +77,29 @@ export async function getPatientData(token) {
 }
 
 /**
- * Fetch appointments for patient (backend: GET /patient/{id}/{token})
- * If user === "doctor" you can still call the same endpoint if backend expects it; here use mapping to controller.
+ * Fetch appointments for patient
+ * If user === 'doctor' then call the doctor-specific endpoint:
+ *   GET /patient/doctor/{id}/{token}
+ * Else call: GET /patient/{id}/{token}
  */
 export async function getPatientAppointments(id, token, user) {
     try {
-        const response = await fetch(`${PATIENT_API}/${encodeURIComponent(id)}/${encodeURIComponent(token)}`, {
+        const encodedId = encodeURIComponent(id);
+        const encodedToken = encodeURIComponent(token);
+        const url = (user === 'doctor')
+            ? `${PATIENT_API}/doctor/${encodedId}/${encodedToken}`
+            : `${PATIENT_API}/${encodedId}/${encodedToken}`;
+
+        const response = await fetch(url, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
+
         if (!response.ok) {
             console.error("Failed to fetch appointments.", response.status);
             return null;
         }
+
         const data = await response.json();
         return data.appointments || [];
     } catch (error) {
@@ -97,6 +107,7 @@ export async function getPatientAppointments(id, token, user) {
         return null;
     }
 }
+
 
 /**
  * Filter Appointments (now using query params)
