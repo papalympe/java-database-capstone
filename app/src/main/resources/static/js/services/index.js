@@ -62,7 +62,7 @@ window.doctorLoginHandler = async function () {
     const password = document.getElementById('password')?.value?.trim() || '';
 
     if (!email || !password) {
-      alert('Please enter both  and password.');
+      alert('Please enter both email and password.');
       return;
     }
 
@@ -136,28 +136,37 @@ window.loginPatient = async function () {
     const password = document.getElementById('password')?.value?.trim() || '';
 
     if (!email || !password) {
-      alert('Please enter  and password');
+      alert('Please enter email and password');
       return;
     }
 
-  // Send identifier (backend expects { identifier, password })
-const response = await fetch(API_BASE_URL + '/patient/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ identifier: email, password })
-});
-
+    // Send identifier (backend expects { identifier, password })
+    const response = await fetch(API_BASE_URL + '/patient/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier: email, password })
+    });
 
     if (!response.ok) {
-      alert('Invalid credentials');
+      // surface backend message if present
+      let msg = 'Invalid credentials';
+      try {
+        const j = await response.json();
+        if (j?.error) msg = j.error;
+        else if (j?.message) msg = j.message;
+      } catch (_) {}
+      alert(msg);
       return;
     }
 
     const data = await response.json();
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('userRole', 'patient');
 
-    window.location.href = '/pages/patientDashboard.html';
+    // IMPORTANT: store token under 'token' and mark role as 'loggedPatient'
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('userRole', 'loggedPatient');
+
+    // go to the logged patient dashboard
+    window.location.href = '/pages/loggedPatientDashboard.html';
 
   } catch (err) {
     console.error('Patient login error:', err);
@@ -168,4 +177,3 @@ const response = await fetch(API_BASE_URL + '/patient/login', {
 export default {
   openRoleModal,
 };
-
