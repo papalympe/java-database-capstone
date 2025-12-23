@@ -145,13 +145,31 @@ public class ServiceManager {
     // -----------------------------------------------------
     // VALIDATE APPOINTMENT
     // -----------------------------------------------------
-    public int validateAppointment(Appointment appointment) {
-        Doctor doctor = doctorRepository.findById(appointment.getDoctor().getId()).orElse(null);
-        if (doctor == null) return -1;
+  public int validateAppointment(Appointment appointment) {
+    Doctor doctor = doctorRepository
+            .findById(appointment.getDoctor().getId())
+            .orElse(null);
 
-        List<String> available = doctorService.getDoctorAvailability(doctor.getId(), appointment.getAppointmentTime().toLocalDate());
-        return available.contains(appointment.getAppointmentTime().toLocalTime().toString()) ? 1 : 0;
+    if (doctor == null) return -1;
+
+    LocalDate date = appointment.getAppointmentTime().toLocalDate();
+    LocalTime requestedTime = appointment.getAppointmentTime().toLocalTime();
+
+    List<String> availableSlots =
+            doctorService.getDoctorAvailability(doctor.getId(), date);
+
+    for (String slot : availableSlots) {
+        Optional<LocalTime> slotStart =
+                doctorService.extractStartLocalTime(slot);
+
+        if (slotStart.isPresent() && slotStart.get().equals(requestedTime)) {
+            return 1; // ✅ AVAILABLE
+        }
     }
+
+    return 0; // ❌ NOT AVAILABLE
+}
+
 
     // -----------------------------------------------------
     // VALIDATE PATIENT (CHECK EXISTENCE)
