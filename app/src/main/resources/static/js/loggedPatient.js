@@ -1,7 +1,7 @@
-// /js/loggedPatient.js
 import { getDoctors, filterDoctors } from './services/doctorServices.js';
 import { createDoctorCard } from './components/doctorCard.js';
 import { bookAppointment } from './services/appointmentRecordService.js';
+import { getPatientData } from './services/patientServices.js'; // <<-- νέο import
 
 document.addEventListener("DOMContentLoaded", () => {
   initPage();
@@ -44,7 +44,40 @@ async function loadDoctorCards() {
   }
 }
 
-export function showBookingOverlay(e, doctor, patient) {
+/**
+ * Show booking overlay.
+ * Now: if 'patient' not provided, fetch patient info from backend using token.
+ * Ensure appointmentTime format includes seconds.
+ */
+export async function showBookingOverlay(e, doctor, patient) {
+  // if patient not passed in, try to fetch using token
+  let resolvedPatient = patient;
+  if (!resolvedPatient) {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login as patient to book an appointment.");
+      return;
+    }
+    try {
+      const pd = await getPatientData(token);
+      if (!pd || !pd.id) {
+        alert("Unable to read patient data. Please login again.");
+        return;
+      }
+      // patient service returns top-level fields (id,name,...)
+      resolvedPatient = {
+        id: pd.id,
+        name: pd.name,
+        email: pd.email,
+        phone: pd.phone
+      };
+    } catch (err) {
+      console.error("Failed to fetch patient data:", err);
+      alert("Unable to get patient details. Please try again.");
+      return;
+    }
+  }
+
   const ripple = document.createElement("div");
   ripple.classList.add("ripple-overlay");
   ripple.style.left = `${e.clientX}px`;
@@ -66,7 +99,7 @@ export function showBookingOverlay(e, doctor, patient) {
   modalApp.innerHTML = `
     <div class="modalApp-inner">
       <h2>Book Appointment</h2>
-      <input class="input-field" type="text" value="${patient?.name || ''}" disabled />
+      <input class="input-field" type="text" value="${resolvedPatient?.name || ''}" disabled />
       <input class="input-field" type="text" value="${doctor?.name || ''}" disabled />
       <input class="input-field" type="text" value="${doctor?.specialty || ''}" disabled/>
       <input class="input-field" type="email" value="${doctor?.email || ''}" disabled/>
@@ -94,13 +127,22 @@ export function showBookingOverlay(e, doctor, patient) {
     if (!date || !time) return alert("Please pick date and time");
 
     const token = localStorage.getItem("token");
-    const startTime = time.split('-')[0];
+    if (!token) return alert("Please login to book an appointment");
+
+    // take start part if range like "09:00-10:00"
+    let startTime = time.split('-')[0].trim();
+
+    // ensure seconds: "HH:MM" -> "HH:MM:00"
+    if (/^\d{2}:\d{2}$/.test(startTime)) startTime = `${startTime}:00`;
+
     const appointment = {
       doctor: { id: doctor.id },
-      patient: { id: patient.id },
-      appointmentTime: `${date}T${startTime}:00`,
+      patient: { id: resolvedPatient.id },
+      appointmentTime: `${date}T${startTime}`, // e.g. 2025-12-23T09:00:00
       status: 0
     };
+
+    console.log("Attempt booking appointment:", appointment);
 
     const { success, message } = await bookAppointment(appointment, token);
     if (success) {
