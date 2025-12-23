@@ -58,15 +58,15 @@ window.adminLoginHandler = async function () {
 // Doctor login handler
 window.doctorLoginHandler = async function () {
   try {
-    const  = document.getElementById('')?.value?.trim() || '';
+    const email  = document.getElementById('email')?.value?.trim() || '';
     const password = document.getElementById('password')?.value?.trim() || '';
 
-    if (! || !password) {
+    if (!email || !password) {
       alert('Please enter both  and password.');
       return;
     }
 
-    const payload = { identifier: , password };
+    const payload = { identifier: email, password };
 
     const response = await fetch(DOCTOR_API, {
       method: 'POST',
