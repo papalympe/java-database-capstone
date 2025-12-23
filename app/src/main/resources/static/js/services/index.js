@@ -58,15 +58,15 @@ window.adminLoginHandler = async function () {
 // Doctor login handler
 window.doctorLoginHandler = async function () {
   try {
-    const email = document.getElementById('email')?.value?.trim() || '';
+    const  = document.getElementById('')?.value?.trim() || '';
     const password = document.getElementById('password')?.value?.trim() || '';
 
-    if (!email || !password) {
-      alert('Please enter both email and password.');
+    if (! || !password) {
+      alert('Please enter both  and password.');
       return;
     }
 
-    const payload = { identifier: email, password };
+    const payload = { identifier: , password };
 
     const response = await fetch(DOCTOR_API, {
       method: 'POST',
@@ -104,7 +104,7 @@ window.signupPatient = async function () {
   try {
     const payload = {
       name: document.getElementById("name").value.trim(),
-      email: document.getElementById("email").value.trim(),
+      : document.getElementById("").value.trim(),
       password: document.getElementById("password").value.trim(),
       phone: document.getElementById("phone").value.trim(),
       address: document.getElementById("address").value.trim(),
@@ -133,19 +133,21 @@ window.signupPatient = async function () {
 
 window.loginPatient = async function () {
   try {
-    const email = document.getElementById('email')?.value?.trim() || '';
+    const  = document.getElementById('')?.value?.trim() || '';
     const password = document.getElementById('password')?.value?.trim() || '';
 
-    if (!email || !password) {
-      alert('Please enter email and password');
+    if (! || !password) {
+      alert('Please enter  and password');
       return;
     }
 
-    const response = await fetch(API_BASE_URL + '/patient/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
+  // Send identifier (backend expects { identifier, password })
+const response = await fetch(API_BASE_URL + '/patient/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ identifier: email, password })
+});
+
 
     if (!response.ok) {
       alert('Invalid credentials');
