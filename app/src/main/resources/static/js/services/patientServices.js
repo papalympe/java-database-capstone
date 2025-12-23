@@ -98,36 +98,42 @@ export async function getPatientAppointments(id, token, user) {
     }
 }
 
+/**
+ * Filter Appointments (now using query params)
+ * GET /patient/filter?condition=...&name=...&token=...
+ */
 export async function filterAppointments(condition, name, token) {
-  try {
-    const params = new URLSearchParams();
+    try {
+        const params = new URLSearchParams();
+        if (condition) params.append("condition", condition);
+        if (name) params.append("name", name);
+        // token is required by backend in current design
+        if (token) params.append("token", token);
 
-    if (condition) params.append("condition", condition);
-    if (name) params.append("name", name);
+        const url = `${PATIENT_API}/filter?${params.toString()}`;
 
-    const response = await fetch(
-      `${PATIENT_API}/filter?${params.toString()}`,
-      {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
+        const response = await fetch(url, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        if (!response.ok) {
+            console.error("Failed to filter appointments", response.status);
+            return [];
         }
-      }
-    );
 
-    if (!response.ok) {
-      console.error("Failed to filter appointments", response.status);
-      return [];
+        const data = await response.json();
+        // serviceManager.filterPatient returns a ResponseEntity with a map that has appointments under "appointments"
+        // But our backend patientService returns the map from patientService that already contains "appointments".
+        // To be robust handle both array or object shape:
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.appointments)) return data.appointments;
+        return [];
+    } catch (error) {
+        console.error("Error filtering appointments:", error);
+        return [];
     }
-
-    const data = await response.json();
-    return data.appointments || [];
-
-  } catch (error) {
-    console.error("Error filtering appointments:", error);
-    return [];
-  }
 }
+
 
 
