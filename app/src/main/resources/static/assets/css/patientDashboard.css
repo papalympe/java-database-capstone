@@ -28,6 +28,12 @@ html, body {
     flex-direction: column;
     align-items: center;
     text-align: center;
+
+    background-image: url('../images/defineRole/index.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .inputs-wrapper {
