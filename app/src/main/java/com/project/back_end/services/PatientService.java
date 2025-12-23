@@ -1,5 +1,9 @@
 package com.project.back_end.services;
 
+import java.util.stream.Collectors;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import com.project.back_end.DTO.AppointmentDTO;
 import com.project.back_end.models.Appointment;
 import com.project.back_end.models.Patient;
@@ -12,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PatientService {
@@ -168,4 +171,22 @@ public class PatientService {
 
         return ResponseEntity.ok(data);
     }
+
+/**
+ * Return appointments for a patient id — used by doctors viewing patient's record.
+ * Note: controller must validate that caller is a doctor before calling this.
+ */
+public ResponseEntity<Map<String, Object>> getPatientAppointmentsForDoctor(Long patientId) {
+    List<Appointment> appointments = appointmentRepository.findByPatientId(patientId);
+
+    List<AppointmentDTO> dtos = appointments.stream()
+            .map(AppointmentDTO::new)
+            .collect(Collectors.toList());
+
+    Map<String, Object> response = new HashMap<>();
+    response.put("appointments", dtos);
+
+    return ResponseEntity.ok(response);
+}
+    
 }
