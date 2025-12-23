@@ -132,10 +132,10 @@ window.signupPatient = async function () {
 
 window.loginPatient = async function () {
   try {
-    const  = document.getElementById('')?.value?.trim() || '';
+    const email  = document.getElementById('email')?.value?.trim() || '';
     const password = document.getElementById('password')?.value?.trim() || '';
 
-    if (! || !password) {
+    if (!email || !password) {
       alert('Please enter  and password');
       return;
     }
