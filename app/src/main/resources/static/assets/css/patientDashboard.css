@@ -30,6 +30,24 @@ html, body {
     text-align: center;
 }
 
+.inputs-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px; /* optional limit for very wide screens */
+}
+
+/* container for table — must stretch to full width of content area */
+.table-container {
+  width: 100%;
+  align-self: stretch; /* IMPORTANT: override main-content centering */
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
+  display: block;
+}
+
 /* 3. SEARCH BAR & FILTERS */
 .searchBar {
     width: 340px;
@@ -48,8 +66,9 @@ html, body {
 .filter-wrapper {
     display: flex;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
+    justify-content: center;
 }
 
 .filter-select {
@@ -181,20 +200,13 @@ html, body {
 }
 
 /* ---------- Patient Appointments table (fixed) ---------- */
-/* wrapper for overflow on small screens */
-.table-responsive {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
 /* base table */
 #patientTable {
   width: 100%;
   border-collapse: collapse;
   table-layout: auto;      /* allow columns to size naturally */
   background: rgba(255,255,255,0.98);
-  margin-top: 20px;
+  margin: 0; /* spacing handled by container */
   font-family: inherit;
 }
 
@@ -203,8 +215,7 @@ html, body {
 #patientTable thead { display: table-header-group !important; }
 #patientTable tbody { display: table-row-group !important; }
 #patientTable tr { display: table-row !important; }
-#patientTable th, 
-#patientTable td { display: table-cell !important; }
+#patientTable th, #patientTable td { display: table-cell !important; }
 
 /* cell spacing / look */
 #patientTable th,
@@ -235,21 +246,40 @@ html, body {
 #patientTable td:nth-child(1),
 #patientTable td:nth-child(2) { text-align: left; }
 
-/* actions small, centered */
-#patientTable td:nth-child(5) {
-  text-align: center;
-}
+/* actions centered */
+#patientTable td:nth-child(5) { text-align: center; }
 
 /* responsive behaviour: allow scroll on very small screens */
 @media (max-width: 768px) {
-  #patientTable th, #patientTable td {
-    padding: 10px 8px;
-    font-size: 14px;
-  }
-
-  /* keep table inside responsive wrapper */
-  #patientTable { display: table; min-width: 720px; } /* so horizontal scroll appears */
+  #patientTable th, #patientTable td { padding: 10px 8px; font-size: 14px; }
+  #patientTable { display: table; min-width: 720px; } /* force horizontal scroll when needed */
 }
+
+/* ---------------- modal close button styling (keeps small neutral close) ---------------- */
+#modal .close,
+.modal .close,
+.modal-content .close,
+#closeModal {
+  background: transparent !important;
+  color: #555 !important;
+  border: none !important;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  cursor: pointer !important;
+  position: absolute !important;
+  right: 16px !important;
+  top: 12px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+#modal .close:hover, .modal .close:hover {
+  color: #A62B1F !important;
+  background: transparent !important;
+}
+
 
 
 
