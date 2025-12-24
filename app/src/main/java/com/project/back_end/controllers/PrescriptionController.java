@@ -55,17 +55,15 @@ public class PrescriptionController {
         }
 
         // After saving, try to update appointment status. If update fails, log and return a 500 with message.
-        try {
-            appointmentService.updateAppointmentStatus(
-                    prescription.getAppointmentId(),
-                    AppointmentStatus.PRESCRIPTION_ADDED
-            );
-        } catch (Exception e) {
-            // Log full error but return informative message
-            System.err.println("Failed to update appointment status for appointmentId=" + prescription.getAppointmentId());
-            e.printStackTrace();
+        boolean updated = appointmentService.updateAppointmentStatus(
+                prescription.getAppointmentId(),
+                AppointmentStatus.PRESCRIPTION_ADDED
+        );
+
+        if (!updated) {
+            System.err.println("Prescription saved but failed to update appointment status for appointmentId=" + prescription.getAppointmentId());
             return ResponseEntity.status(500)
-                    .body(Map.of("error", "Prescription saved but failed to update appointment status: " + e.getMessage()));
+                    .body(Map.of("error", "Prescription saved but failed to update appointment status"));
         }
 
         // All good
