@@ -2,10 +2,12 @@ package com.project.back_end.models;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Document(collection = "prescriptions")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Prescription {
 
     @Id
@@ -29,8 +31,6 @@ public class Prescription {
     @Size(max = 200)
     private String doctorNotes;
 
-    private String _class = "com.project.back_end.models.Prescription";
-
     // Getters & Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -44,6 +44,4 @@ public class Prescription {
     public void setDosage(String dosage) { this.dosage = dosage; }
     public String getDoctorNotes() { return doctorNotes; }
     public void setDoctorNotes(String doctorNotes) { this.doctorNotes = doctorNotes; }
-    public String get_class() { return _class; }
-    public void set_class(String _class) { this._class = _class; }
 }
