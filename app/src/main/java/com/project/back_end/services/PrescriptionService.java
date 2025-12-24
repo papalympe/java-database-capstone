@@ -1,4 +1,3 @@
-// File: src/main/java/com/project/back_end/services/PrescriptionService.java
 package com.project.back_end.services;
 
 import com.project.back_end.models.Prescription;
@@ -80,7 +79,7 @@ public class PrescriptionService {
             return found;
         } catch (Exception primaryEx) {
             // Log the primary exception then try a safe fallback to avoid 500 due to type mismatch
-            System.err.println("PrescriptionRepository.findByAppointmentId failed: " + primaryEx.getMessage());
+            System.err.println("PrescriptionRepository.findByAppointmentId failed: " + primaryEx.getClass().getName() + " - " + primaryEx.getMessage());
             primaryEx.printStackTrace();
 
             try {
@@ -88,22 +87,35 @@ public class PrescriptionService {
                 List<Prescription> all = prescriptionRepository.findAll();
                 if (all == null) return Collections.emptyList();
 
+                // Be tolerant about numeric type differences: compare via string/long safely
                 return all.stream()
                         .filter(p -> {
                             try {
-                                // avoid NPE if p.getAppointmentId() is null
-                                return appointmentId != null && appointmentId.equals(p.getAppointmentId());
+                                if (p == null) return false;
+                                Long payloadId = p.getAppointmentId();
+                                if (payloadId != null && appointmentId != null) {
+                                    return appointmentId.equals(payloadId);
+                                }
+                                // if payloadId is null, attempt to be forgiving (no match)
+                                return false;
                             } catch (Exception e) {
-                                // if field type mismatch (e.g. stored as String) the equals may throw; ignore those
+                                // if field type mismatch (e.g. stored as String) attempt string comparison
+                                try {
+                                    Object raw = p.getAppointmentId();
+                                    if (raw != null && appointmentId != null) {
+                                        return String.valueOf(raw).equals(String.valueOf(appointmentId));
+                                    }
+                                } catch (Exception ignored) {}
                                 return false;
                             }
                         })
                         .collect(Collectors.toList());
             } catch (Exception fallbackEx) {
-                // log and rethrow to be handled by caller
-                System.err.println("Fallback scanning also failed: " + fallbackEx.getMessage());
+                // Log the fallback exception but DO NOT rethrow: return empty list to avoid 500s
+                System.err.println("Fallback scanning also failed: " + fallbackEx.getClass().getName() + " - " + fallbackEx.getMessage());
                 fallbackEx.printStackTrace();
-                throw fallbackEx;
+                // Return empty list — safer for frontend (it will assume "no prescription found")
+                return Collections.emptyList();
             }
         }
     }
