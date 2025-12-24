@@ -44,12 +44,23 @@ export async function getPrescription(appointmentId, token) {
       }
     });
 
-    // if non-OK try parse error body, then throw
+    // if non-OK try parse error body, then throw (and also log raw body if not JSON)
     if (!response.ok) {
       let errorData = {};
-      try { errorData = await response.json(); } catch (_) { /* ignore parse error */ }
-      console.error("Failed to fetch prescription:", response.status, errorData);
-      throw new Error(errorData.message || `Server responded ${response.status}`);
+      try {
+        errorData = await response.json();
+        console.error("Failed to fetch prescription (json):", response.status, errorData);
+        throw new Error(errorData.message || `Server responded ${response.status}`);
+      } catch (jsonErr) {
+        // JSON parse failed — read raw text
+        try {
+          const raw = await response.text();
+          console.error("Failed to fetch prescription (raw body):", response.status, raw);
+        } catch (textErr) {
+          console.error("Failed to fetch prescription and additionally failed to read raw text body");
+        }
+        throw new Error(`Server responded with status ${response.status}`);
+      }
     }
 
     const result = await response.json();
