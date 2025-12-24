@@ -1,3 +1,4 @@
+// src/main/java/com/project/back_end/services/PrescriptionService.java
 package com.project.back_end.services;
 
 import com.project.back_end.models.Prescription;
@@ -6,9 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PrescriptionService {
@@ -23,10 +23,8 @@ public class PrescriptionService {
     // SAVE PRESCRIPTION
     // -----------------------------------------------------
     public ResponseEntity<Map<String, String>> savePrescription(Prescription prescription) {
-
         try {
-           // Βρίσκουμε όλες τις συνταγές για την ίδια appointment
-            List<Prescription> existingList = prescriptionRepository.findByAppointmentId(prescription.getAppointmentId());
+            List<Prescription> existingList = safeFindByAppointmentId(prescription.getAppointmentId());
 
             Prescription existing = existingList.isEmpty() ? null : existingList.get(0);
 
@@ -41,35 +39,72 @@ public class PrescriptionService {
                     .body(Map.of("message", "Prescription saved"));
 
         } catch (Exception e) {
-            System.out.println("Error saving prescription: " + e.getMessage());
+            // full stacktrace to server logs for debugging
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "An error occurred while saving the prescription"));
         }
     }
 
     // -----------------------------------------------------
-    // GET PRESCRIPTION BY APPOINTMENT ID
+    // GET PRESCRIPTION BY APPOINTMENT ID (robust)
     // -----------------------------------------------------
     public ResponseEntity<Map<String, Object>> getPrescription(Long appointmentId) {
-
         try {
-            List<Prescription> list = prescriptionRepository.findByAppointmentId(appointmentId);
-            Prescription prescription = list.isEmpty() ? null : list.get(0);;
+            // Try normal repository call first (fast path)
+            List<Prescription> list = safeFindByAppointmentId(appointmentId);
 
-            if (prescription == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "No prescription found for this appointment"));
-            }
+            // Always return an array (frontend expects an array)
+            if (list == null) list = Collections.emptyList();
 
             Map<String, Object> response = new HashMap<>();
-            response.put("prescription", prescription);
-
+            response.put("prescription", list);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            System.out.println("Error retrieving prescription: " + e.getMessage());
+            // Log full stacktrace server-side for diagnosis
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An error occurred while retrieving the prescription"));
+        }
+    }
+
+    // -----------------------------------------------------
+    // Helper: call repository safely, fallback to in-memory filter if something goes wrong
+    // -----------------------------------------------------
+    private List<Prescription> safeFindByAppointmentId(Long appointmentId) {
+        try {
+            // primary attempt - repository query
+            List<Prescription> found = prescriptionRepository.findByAppointmentId(appointmentId);
+            if (found == null) return Collections.emptyList();
+            return found;
+        } catch (Exception primaryEx) {
+            // Log the primary exception then try a safe fallback to avoid 500 due to type mismatch
+            System.err.println("PrescriptionRepository.findByAppointmentId failed: " + primaryEx.getMessage());
+            primaryEx.printStackTrace();
+
+            try {
+                // Fallback: load all prescriptions and filter in Java (slower but robust)
+                List<Prescription> all = prescriptionRepository.findAll();
+                if (all == null) return Collections.emptyList();
+
+                return all.stream()
+                        .filter(p -> {
+                            try {
+                                // avoid NPE if p.getAppointmentId() is null
+                                return appointmentId != null && appointmentId.equals(p.getAppointmentId());
+                            } catch (Exception e) {
+                                // if field type mismatch (e.g. stored as String) the equals may throw; ignore those
+                                return false;
+                            }
+                        })
+                        .collect(Collectors.toList());
+            } catch (Exception fallbackEx) {
+                // log and rethrow to be handled by caller
+                System.err.println("Fallback scanning also failed: " + fallbackEx.getMessage());
+                fallbackEx.printStackTrace();
+                throw fallbackEx;
+            }
         }
     }
 }
