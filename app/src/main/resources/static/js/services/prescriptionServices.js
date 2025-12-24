@@ -34,9 +34,9 @@ export async function savePrescription(prescription, token) {
 }
 
 export async function getPrescription(appointmentId, token) {
+  const url = `${PRESCRIPTION_API}/${encodeURIComponent(appointmentId)}/${encodeURIComponent(token)}`;
+  console.log("GET prescription ->", url);
   try {
-    const url = `${PRESCRIPTION_API}/${encodeURIComponent(appointmentId)}/${encodeURIComponent(token)}`;
-    console.log("GET prescription ->", url);
     const response = await fetch(url, {
       method: "GET",
       headers: {
@@ -44,22 +44,23 @@ export async function getPrescription(appointmentId, token) {
       }
     });
 
-    // if non-OK try parse error body, then throw (and also log raw body if not JSON)
+    // if non-OK try parse error body (json preferred), then try plain text, then throw
     if (!response.ok) {
-      let errorData = {};
+      let errorData = null;
       try {
         errorData = await response.json();
         console.error("Failed to fetch prescription (json):", response.status, errorData);
-        throw new Error(errorData.message || `Server responded ${response.status}`);
+        throw new Error(errorData.message || `Server responded with status ${response.status}`);
       } catch (jsonErr) {
-        // JSON parse failed — read raw text
+        // JSON parse failed — try raw text (useful when server returned HTML error page)
         try {
-          const raw = await response.text();
-          console.error("Failed to fetch prescription (raw body):", response.status, raw);
+          const text = await response.text();
+          console.error("Failed to fetch prescription and additionally failed to parse json. Raw body:", text);
+          throw new Error(`Server responded with status ${response.status}. Body: ${text}`);
         } catch (textErr) {
           console.error("Failed to fetch prescription and additionally failed to read raw text body");
+          throw new Error(`Server responded with status ${response.status}`);
         }
-        throw new Error(`Server responded with status ${response.status}`);
       }
     }
 
@@ -72,3 +73,4 @@ export async function getPrescription(appointmentId, token) {
     throw new Error(error.message || "An error occurred while retrieving the prescription");
   }
 }
+
