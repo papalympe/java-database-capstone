@@ -101,14 +101,26 @@ public class AppointmentService {
     }
 
     @Transactional
-    public void updateAppointmentStatus(Long appointmentId, AppointmentStatus status) {
-    Optional<Appointment> opt = appointmentRepository.findById(appointmentId);
-    if (opt.isPresent()) {
-        Appointment appointment = opt.get();
-        appointment.setAppointmentStatus(status); 
-        appointmentRepository.save(appointment);
+    public boolean updateAppointmentStatus(Long appointmentId, AppointmentStatus status) {
+        try {
+            Optional<Appointment> opt = appointmentRepository.findById(appointmentId);
+            if (opt.isPresent()) {
+                Appointment appointment = opt.get();
+                appointment.setAppointmentStatus(status);
+                appointmentRepository.save(appointment);
+                System.out.println("AppointmentService.updateAppointmentStatus: updated appointmentId=" + appointmentId + " to " + status);
+                return true;
+            } else {
+                System.out.println("AppointmentService.updateAppointmentStatus: appointment not found id=" + appointmentId);
+                return false;
+            }
+        } catch (Exception e) {
+            System.err.println("AppointmentService.updateAppointmentStatus: exception for id=" + appointmentId + " -> " + e.getClass().getName() + " : " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
-}
+
 
     // -----------------------------------------------------
     // CANCEL APPOINTMENT
