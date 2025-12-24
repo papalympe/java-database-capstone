@@ -26,32 +26,41 @@ public class PrescriptionController {
         this.appointmentService = appointmentService;
     }
 
-    @PostMapping("/{token}")
+    /* =======================
+       SAVE PRESCRIPTION
+       ======================= */
+    @PostMapping("/{token:.+}")
     public ResponseEntity<Map<String, String>> savePrescription(
             @RequestBody Prescription prescription,
-            @PathVariable String token) {
+            @PathVariable("token") String token) {
 
-        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
+        ResponseEntity<Map<String, String>> tokenValidation =
+                serviceManager.validateToken(token, "doctor");
+
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode())
                     .body(Map.of("error", "Unauthorized or invalid token"));
         }
 
-        // Χρήση enum για status
         appointmentService.updateAppointmentStatus(
                 prescription.getAppointmentId(),
                 AppointmentStatus.PRESCRIPTION_ADDED
         );
-        
+
         return prescriptionService.savePrescription(prescription);
     }
 
-    @GetMapping("/{appointmentId}/{token}")
+    /* =======================
+       GET PRESCRIPTION
+       ======================= */
+    @GetMapping("/{appointmentId}/{token:.+}")
     public ResponseEntity<Map<String, Object>> getPrescription(
             @PathVariable Long appointmentId,
-            @PathVariable String token) {
+            @PathVariable("token") String token) {
 
-        ResponseEntity<Map<String, String>> tokenValidation = serviceManager.validateToken(token, "doctor");
+        ResponseEntity<Map<String, String>> tokenValidation =
+                serviceManager.validateToken(token, "doctor");
+
         if (tokenValidation.getStatusCode().is4xxClientError()) {
             return ResponseEntity.status(tokenValidation.getStatusCode())
                     .body(Map.of("error", "Unauthorized or invalid token"));
