@@ -1,7 +1,6 @@
 package com.project.back_end.models;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import com.project.back_end.models.AppointmentStatus;
@@ -20,7 +19,7 @@ public class Appointment {
     @NotNull
     private Patient patient;
 
-    @Future(message = "Appointment time must be in the future")
+    // Removed @Future because it causes validation failures on updates (e.g. adding prescription after appointment)
     @NotNull
     private LocalDateTime appointmentTime;
 
@@ -55,11 +54,11 @@ public class Appointment {
     public void setStatus(int status) { this.status = status; }
 
     // Βοηθητικά getters και setters για enum
-public AppointmentStatus getAppointmentStatus() {
-    return AppointmentStatus.fromCode(this.status);
-}
+    public AppointmentStatus getAppointmentStatus() {
+        return AppointmentStatus.fromCode(this.status);
+    }
 
-public void setAppointmentStatus(AppointmentStatus status) {
-    this.status = status.getCode();
-}
+    public void setAppointmentStatus(AppointmentStatus status) {
+        this.status = status.getCode();
+    }
 }
