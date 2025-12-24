@@ -1,3 +1,4 @@
+// js/addPrescription.js
 import { savePrescription, getPrescription } from "./services/prescriptionServices.js";
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -6,58 +7,57 @@ document.addEventListener('DOMContentLoaded', async () => {
   const medicinesInput = document.getElementById("medicines");
   const dosageInput = document.getElementById("dosage");
   const notesInput = document.getElementById("notes");
-  const heading = document.getElementById("heading")
-
+  const heading = document.getElementById("heading");
 
   const urlParams = new URLSearchParams(window.location.search);
-  const appointmentId = urlParams.get("appointmentId");
+  let appointmentId = urlParams.get("appointmentId");
   const mode = urlParams.get("mode");
   const token = localStorage.getItem("token");
-  const patientName = urlParams.get("patientName")
+  const patientName = urlParams.get("patientName");
 
-  if (heading) {
-    if (mode === "view") {
-      heading.innerHTML = `View <span>Prescription</span>`;
-    } else {
-      heading.innerHTML = `Add <span>Prescription</span>`;
-    }
+  // Ensure appointmentId is a number (frontend fix)
+  if (appointmentId !== null) {
+    const n = Number(appointmentId);
+    appointmentId = Number.isFinite(n) ? n : appointmentId; // keep original if not numeric
   }
 
+  if (heading) {
+    heading.innerHTML = mode === "view" ? `View <span>Prescription</span>` : `Add <span>Prescription</span>`;
+  }
 
-  // Pre-fill patient name
   if (patientNameInput && patientName) {
     patientNameInput.value = patientName;
   }
 
-  // Fetch and pre-fill existing prescription if it exists
+  // Try to load existing prescription
   if (appointmentId && token) {
     try {
       const response = await getPrescription(appointmentId, token);
       console.log("getPrescription :: ", response);
 
-      // Now, check if the prescription exists in the response and access it from the array
-      if (response.prescription && response.prescription.length > 0) {
-        const existingPrescription = response.prescription[0]; // Access first prescription object
-        patientNameInput.value = existingPrescription.patientName || YOU;
+      if (response && Array.isArray(response.prescription) && response.prescription.length > 0) {
+        const existingPrescription = response.prescription[0];
+        patientNameInput.value = existingPrescription.patientName || '';
         medicinesInput.value = existingPrescription.medication || "";
         dosageInput.value = existingPrescription.dosage || "";
         notesInput.value = existingPrescription.doctorNotes || "";
+      } else {
+        console.log("No prescription found for appointmentId:", appointmentId);
       }
-
     } catch (error) {
       console.warn("No existing prescription found or failed to load:", error);
     }
   }
+
   if (mode === 'view') {
-    // Make fields read-only
     patientNameInput.disabled = true;
     medicinesInput.disabled = true;
     dosageInput.disabled = true;
     notesInput.disabled = true;
-    savePrescriptionBtn.style.display = "none";  // Hide the save button
+    if (savePrescriptionBtn) savePrescriptionBtn.style.display = "none";
   }
-  // Save prescription on button click
-  savePrescriptionBtn.addEventListener('click', async (e) => {
+
+  savePrescriptionBtn?.addEventListener('click', async (e) => {
     e.preventDefault();
 
     const prescription = {
@@ -65,16 +65,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       medication: medicinesInput.value,
       dosage: dosageInput.value,
       doctorNotes: notesInput.value,
-      appointmentId
+      appointmentId // now a number (if parse succeeded)
     };
 
-    const { success, message } = await savePrescription(prescription, token);
+    console.log("Attempting to save prescription (frontend):", prescription);
 
-    if (success) {
-      alert("✅ Prescription saved successfully.");
-      selectRole('doctor');
-    } else {
-      alert("❌ Failed to save prescription. " + message);
+    try {
+      const { success, message } = await savePrescription(prescription, token);
+      console.log("savePrescription result:", { success, message });
+      if (success) {
+        alert("✅ Prescription saved successfully.");
+        selectRole('doctor');
+      } else {
+        alert("❌ Failed to save prescription. " + message);
+      }
+    } catch (err) {
+      console.error("Unexpected error while saving prescription:", err);
+      alert("❌ Unexpected error while saving prescription. See console.");
     }
   });
 });
