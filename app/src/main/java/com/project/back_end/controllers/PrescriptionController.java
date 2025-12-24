@@ -5,7 +5,6 @@ import com.project.back_end.models.AppointmentStatus;
 import com.project.back_end.services.AppointmentService;
 import com.project.back_end.services.PrescriptionService;
 import com.project.back_end.services.ServiceManager;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,35 +27,49 @@ public class PrescriptionController {
     }
 
     /* =======================
-       SAVE PRESCRIPTION
+       SAVE PRESCRIPTION (improved logging + safer flow)
        ======================= */
     @PostMapping("/{token:.+}")
     public ResponseEntity<Map<String, String>> savePrescription(
             @RequestBody Prescription prescription,
             @PathVariable("token") String token) {
 
+        System.out.println("SAVE PRESCRIPTION called. token=" + token + " payload=" + prescription);
+
+        ResponseEntity<Map<String, String>> tokenValidation =
+                serviceManager.validateToken(token, "doctor");
+
+        if (tokenValidation.getStatusCode().is4xxClientError()) {
+            System.out.println("Token validation failed when saving prescription: " + tokenValidation.getBody());
+            return ResponseEntity.status(tokenValidation.getStatusCode())
+                    .body(Map.of("error", "Unauthorized or invalid token"));
+        }
+
+        // First attempt to save the prescription
+        ResponseEntity<Map<String, String>> saveResp = prescriptionService.savePrescription(prescription);
+
+        if (!saveResp.getStatusCode().is2xxSuccessful()) {
+            // return underlying message so frontend sees concrete reason
+            System.err.println("Failed to save prescription: " + saveResp.getBody());
+            return ResponseEntity.status(saveResp.getStatusCode()).body(saveResp.getBody());
+        }
+
+        // After saving, try to update appointment status. If update fails, log and return a 500 with message.
         try {
-            ResponseEntity<Map<String, String>> tokenValidation =
-                    serviceManager.validateToken(token, "doctor");
-
-            if (tokenValidation.getStatusCode().is4xxClientError()) {
-                return ResponseEntity.status(tokenValidation.getStatusCode())
-                        .body(Map.of("error", "Unauthorized or invalid token"));
-            }
-
             appointmentService.updateAppointmentStatus(
                     prescription.getAppointmentId(),
                     AppointmentStatus.PRESCRIPTION_ADDED
             );
-
-            return prescriptionService.savePrescription(prescription);
-
         } catch (Exception e) {
-            // Full stacktrace to server log for debugging
+            // Log full error but return informative message
+            System.err.println("Failed to update appointment status for appointmentId=" + prescription.getAppointmentId());
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Server error while saving prescription"));
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Prescription saved but failed to update appointment status: " + e.getMessage()));
         }
+
+        // All good
+        return ResponseEntity.status(201).body(Map.of("message", "Prescription saved and appointment updated"));
     }
 
     /* =======================
@@ -67,22 +80,17 @@ public class PrescriptionController {
             @PathVariable Long appointmentId,
             @PathVariable("token") String token) {
 
-        try {
-            ResponseEntity<Map<String, String>> tokenValidation =
-                    serviceManager.validateToken(token, "doctor");
+        System.out.println("GET PRESCRIPTION called. appointmentId=" + appointmentId + " token=" + token);
 
-            if (tokenValidation.getStatusCode().is4xxClientError()) {
-                return ResponseEntity.status(tokenValidation.getStatusCode())
-                        .body(Map.of("error", "Unauthorized or invalid token"));
-            }
+        ResponseEntity<Map<String, String>> tokenValidation =
+                serviceManager.validateToken(token, "doctor");
 
-            return prescriptionService.getPrescription(appointmentId);
-
-        } catch (Exception e) {
-            // Full stacktrace to server log for debugging
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Server error while retrieving prescription"));
+        if (tokenValidation.getStatusCode().is4xxClientError()) {
+            System.out.println("Token validation failed when getting prescription: " + tokenValidation.getBody());
+            return ResponseEntity.status(tokenValidation.getStatusCode())
+                    .body(Map.of("error", "Unauthorized or invalid token"));
         }
+
+        return prescriptionService.getPrescription(appointmentId);
     }
 }
