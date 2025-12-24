@@ -1,46 +1,63 @@
 // prescriptionServices.js
-import { API_BASE_URL } from '../config/config.js'
+import { API_BASE_URL } from '../config/config.js';
 
-const PRESCRITION_API = API_BASE_URL + "/prescription"
+const PRESCRIPTION_API = API_BASE_URL + "/prescription";
+
 export async function savePrescription(prescription, token) {
   try {
-    const response = await fetch(`${PRESCRITION_API}/${token}`, {
+    const url = `${PRESCRIPTION_API}/${encodeURIComponent(token)}`;
+    console.log("POST prescription ->", url, prescription);
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-type": "application/json"
       },
       body: JSON.stringify(prescription)
     });
-    const result = await response.json();
-    return { success: response.ok, message: result.message }
-  }
-  catch (error) {
-    console.error("Error :: savePrescription :: ", error)
-    return { success: false, message: result.message }
+
+    // try to parse body safely
+    const result = await (async () => {
+      try { return await response.json(); } catch (_) { return {}; }
+    })();
+
+    if (!response.ok) {
+      console.error("savePrescription failed", response.status, result);
+      return { success: false, message: result.message || `Server error ${response.status}` };
+    }
+
+    return { success: true, message: result.message || "Saved" };
+
+  } catch (error) {
+    console.error("Error :: savePrescription :: ", error);
+    return { success: false, message: error.message || "Network error" };
   }
 }
 
 export async function getPrescription(appointmentId, token) {
   try {
-    const response = await fetch(`${PRESCRITION_API}/${appointmentId}/${token}`, {
+    const url = `${PRESCRIPTION_API}/${encodeURIComponent(appointmentId)}/${encodeURIComponent(token)}`;
+    console.log("GET prescription ->", url);
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
       }
     });
 
+    // if non-OK try parse error body, then throw
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Failed to fetch prescription:", errorData);
-      throw new Error(errorData.message || "Unable to fetch prescription");
+      let errorData = {};
+      try { errorData = await response.json(); } catch (_) { /* ignore parse error */ }
+      console.error("Failed to fetch prescription:", response.status, errorData);
+      throw new Error(errorData.message || `Server responded ${response.status}`);
     }
 
     const result = await response.json();
-    console.log(result)
-    console.log(result)
-    return result; // This should be your prescription object
+    console.log("prescription result:", result);
+    return result; // expected shape: { prescription: [...] } or similar
   } catch (error) {
     console.error("Error :: getPrescription ::", error);
-    throw error;
+    // bubble up to caller so caller can decide what to do
+    throw new Error(error.message || "An error occurred while retrieving the prescription");
   }
 }
