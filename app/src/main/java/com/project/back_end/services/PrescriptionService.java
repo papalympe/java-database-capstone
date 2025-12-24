@@ -22,26 +22,54 @@ public class PrescriptionService {
     // SAVE PRESCRIPTION
     // -----------------------------------------------------
     public ResponseEntity<Map<String, String>> savePrescription(Prescription prescription) {
+        // Basic payload validation (protects from Jackson/validation surprises)
+        if (prescription == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Empty payload"));
+        }
+        if (prescription.getAppointmentId() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "appointmentId is required"));
+        }
+        if (prescription.getPatientName() == null || prescription.getPatientName().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "patientName is required"));
+        }
+        if (prescription.getMedication() == null || prescription.getMedication().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "medication is required"));
+        }
+        if (prescription.getDosage() == null || prescription.getDosage().trim().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "dosage is required"));
+        }
+
+        System.out.println("PrescriptionService.savePrescription called. appointmentId="
+                + prescription.getAppointmentId() + " patient=" + prescription.getPatientName());
+
         try {
             List<Prescription> existingList = safeFindByAppointmentId(prescription.getAppointmentId());
-
             Prescription existing = existingList.isEmpty() ? null : existingList.get(0);
 
             if (existing != null) {
+                System.out.println("Prescription already exists for appointmentId=" + prescription.getAppointmentId());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(Map.of("message", "Prescription already exists for this appointment"));
             }
 
-            prescriptionRepository.save(prescription);
+            // Save (may throw)
+            Prescription saved = prescriptionRepository.save(prescription);
+            System.out.println("Prescription saved with id=" + (saved != null ? saved.getId() : "null"));
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of("message", "Prescription saved"));
 
         } catch (Exception e) {
             // full stacktrace to server logs for debugging
+            System.err.println("Error saving prescription (exception): " + e.getClass().getName() + " : " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "An error occurred while saving the prescription"));
+                    .body(Map.of("message", "Server error while saving prescription: " + e.getMessage()));
         }
     }
 
@@ -50,10 +78,7 @@ public class PrescriptionService {
     // -----------------------------------------------------
     public ResponseEntity<Map<String, Object>> getPrescription(Long appointmentId) {
         try {
-            // Try normal repository call first (fast path)
             List<Prescription> list = safeFindByAppointmentId(appointmentId);
-
-            // Always return an array (frontend expects an array)
             if (list == null) list = Collections.emptyList();
 
             Map<String, Object> response = new HashMap<>();
@@ -61,7 +86,7 @@ public class PrescriptionService {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            // Log full stacktrace server-side for diagnosis
+            System.err.println("Error retrieving prescription: " + e.getClass().getName() + " : " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "An error occurred while retrieving the prescription"));
@@ -73,13 +98,11 @@ public class PrescriptionService {
     // -----------------------------------------------------
     private List<Prescription> safeFindByAppointmentId(Long appointmentId) {
         try {
-            // primary attempt - repository query
             List<Prescription> found = prescriptionRepository.findByAppointmentId(appointmentId);
             if (found == null) return Collections.emptyList();
             return found;
         } catch (Exception primaryEx) {
-            // Log the primary exception then try a safe fallback to avoid 500 due to type mismatch
-            System.err.println("PrescriptionRepository.findByAppointmentId failed: " + primaryEx.getClass().getName() + " - " + primaryEx.getMessage());
+            System.err.println("PrescriptionRepository.findByAppointmentId failed: " + primaryEx.getClass().getName() + " : " + primaryEx.getMessage());
             primaryEx.printStackTrace();
 
             try {
@@ -87,35 +110,19 @@ public class PrescriptionService {
                 List<Prescription> all = prescriptionRepository.findAll();
                 if (all == null) return Collections.emptyList();
 
-                // Be tolerant about numeric type differences: compare via string/long safely
                 return all.stream()
                         .filter(p -> {
                             try {
-                                if (p == null) return false;
-                                Long payloadId = p.getAppointmentId();
-                                if (payloadId != null && appointmentId != null) {
-                                    return appointmentId.equals(payloadId);
-                                }
-                                // if payloadId is null, attempt to be forgiving (no match)
-                                return false;
+                                return appointmentId != null && appointmentId.equals(p.getAppointmentId());
                             } catch (Exception e) {
-                                // if field type mismatch (e.g. stored as String) attempt string comparison
-                                try {
-                                    Object raw = p.getAppointmentId();
-                                    if (raw != null && appointmentId != null) {
-                                        return String.valueOf(raw).equals(String.valueOf(appointmentId));
-                                    }
-                                } catch (Exception ignored) {}
                                 return false;
                             }
                         })
                         .collect(Collectors.toList());
             } catch (Exception fallbackEx) {
-                // Log the fallback exception but DO NOT rethrow: return empty list to avoid 500s
-                System.err.println("Fallback scanning also failed: " + fallbackEx.getClass().getName() + " - " + fallbackEx.getMessage());
+                System.err.println("Fallback scanning also failed: " + fallbackEx.getClass().getName() + " : " + fallbackEx.getMessage());
                 fallbackEx.printStackTrace();
-                // Return empty list — safer for frontend (it will assume "no prescription found")
-                return Collections.emptyList();
+                throw fallbackEx;
             }
         }
     }
