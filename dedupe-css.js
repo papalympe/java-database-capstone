@@ -1,56 +1,58 @@
-// dedupe-css.js
-const fs = require('fs');
-const path = require('path');
-const glob = require('glob');
-const postcss = require('postcss');
-const safeParser = require('postcss-safe-parser');
+const fs = require("fs");
+const path = require("path");
+const fg = require("fast-glob");
 
-function normalizeSelector(sel) {
-  // collapse whitespace, remove newlines, trim
-  return sel.replace(/\s+/g, ' ').trim();
-}
+/**
+ * Αφαιρεί duplicate selectors κρατώντας το ΠΡΩΤΟ block
+ * Λειτουργεί μόνο σε .css αρχεία
+ */
 
-// pattern για όλα τα css αρχεία
-const pattern = 'app/src/main/resources/static/assets/css/**/*.css';
-const files = glob.sync(pattern, { nodir: true });
+const CSS_GLOB = "app/src/main/resources/static/assets/css/**/*.css";
 
-if (files.length === 0) {
-  console.log(`No CSS files found for pattern: ${pattern}`);
-  process.exit(0);
-}
+function dedupeCssFile(filePath) {
+  const content = fs.readFileSync(filePath, "utf8");
 
-let totalRemoved = 0;
-
-files.forEach(file => {
-  const src = fs.readFileSync(file, 'utf8');
-  const root = postcss.parse(src, { parser: safeParser });
-
+  const lines = content.split("\n");
   const seen = new Set();
-  let removedInFile = 0;
+  const output = [];
 
-  // walk all rules (top-level & inside at-rules)
-  root.walkRules(rule => {
-    // rule.selector may be e.g. ".a, .b"
-    // normalize the full selector string
-    const selectorStr = normalizeSelector(rule.selector || '');
-    if (!selectorStr) return;
+  let buffer = [];
+  let currentSelector = null;
 
-    if (seen.has(selectorStr)) {
-      // remove duplicate rule
-      rule.remove();
-      removedInFile++;
-    } else {
-      seen.add(selectorStr);
+  function flush() {
+    if (!currentSelector) {
+      output.push(...buffer);
+    } else if (!seen.has(currentSelector)) {
+      seen.add(currentSelector);
+      output.push(...buffer);
     }
-  });
-
-  if (removedInFile > 0) {
-    fs.writeFileSync(file, root.toString(), 'utf8');
-    console.log(`Updated ${file} — removed ${removedInFile} duplicate rule(s).`);
-    totalRemoved += removedInFile;
-  } else {
-    console.log(`No duplicates in ${file}.`);
+    buffer = [];
+    currentSelector = null;
   }
-});
 
-console.log(`Done. Total duplicate rules removed: ${totalRemoved}`);
+  for (const line of lines) {
+    const selectorMatch = line.match(/^([^{]+)\s*\{/);
+
+    if (selectorMatch) {
+      flush();
+      currentSelector = selectorMatch[1].trim();
+    }
+
+    buffer.push(line);
+
+    if (line.includes("}")) {
+      flush();
+    }
+  }
+
+  flush();
+
+  fs.writeFileSync(filePath, output.join("\n"), "utf8");
+  console.log("✔ Deduped:", filePath);
+}
+
+const files = fg.sync(CSS_GLOB);
+
+files.forEach(dedupeCssFile);
+
+console.log("\n✅ CSS duplicate selectors removed successfully.");
