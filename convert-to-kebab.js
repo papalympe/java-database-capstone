@@ -1,22 +1,25 @@
+// convert-to-kebab.js
 const fs = require("fs");
 const path = require("path");
 
 // Root φάκελος project
-const ROOT_DIR = path.resolve(__dirname, ".");
+const rootDir = path.resolve(__dirname, ".");
 
-// Regex για camelCase → kebab-case
+// CamelCase → kebab-case
 function camelToKebab(str) {
   return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-// Διαλέγουμε αρχεία που θα επεξεργαστούμε
-function getFiles(dir, exts = [".css", ".html", ".js"]) {
+// Παίρνει όλα τα αρχεία με συγκεκριμένα extensions
+function getFiles(dir, exts = [".css"]) {
   let results = [];
   const list = fs.readdirSync(dir);
+
   list.forEach((file) => {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
+
+    if (stat.isDirectory()) {
       results = results.concat(getFiles(filePath, exts));
     } else {
       if (exts.includes(path.extname(file))) {
@@ -24,33 +27,38 @@ function getFiles(dir, exts = [".css", ".html", ".js"]) {
       }
     }
   });
+
   return results;
 }
 
-// Αντικατάσταση camelCase IDs και keyframes
+// Επεξεργασία CSS αρχείου
 function processFile(filePath) {
   let content = fs.readFileSync(filePath, "utf-8");
 
-  // IDs & class references (#idName, .className)
-  content = content.replace(/([#.]?)([a-zA-Z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]*)/g, (match, prefix, name) => {
-    return prefix + camelToKebab(name);
-  });
+  // IDs & classes
+  content = content.replace(
+    /([#.]?)([a-zA-Z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]*)/g,
+    (_, prefix, name) => prefix + camelToKebab(name)
+  );
 
-  // keyframes / animation names
-  content = content.replace(/@keyframes\s+([a-zA-Z][a-zA-Z0-9]*)/g, (match, name) => {
-    return `@keyframes ${camelToKebab(name)}`;
-  });
+  // @keyframes
+  content = content.replace(
+    /@keyframes\s+([a-zA-Z][a-zA-Z0-9]*)/g,
+    (_, name) => `@keyframes ${camelToKebab(name)}`
+  );
 
-  content = content.replace(/animation\s*:\s*([a-zA-Z][a-zA-Z0-9]*)/g, (match, name) => {
-    return `animation: ${camelToKebab(name)}`;
-  });
+  // animation-name property
+  content = content.replace(
+    /animation\s*:\s*([a-zA-Z][a-zA-Z0-9]*)/g,
+    (_, name) => `animation: ${camelToKebab(name)}`
+  );
 
   fs.writeFileSync(filePath, content, "utf-8");
   console.log("Updated:", filePath);
 }
 
-// Εκτέλεση
-const files = getFiles(ROOT_DIR);
-files.forEach(processFile);
+// Εκτέλεση μόνο σε CSS αρχεία
+const cssFiles = getFiles(rootDir, [".css"]);
+cssFiles.forEach(processFile);
 
-console.log("✅ Όλα τα αρχεία έχουν μετατραπεί σε kebab-case.");
+console.log("✅ Όλα τα CSS αρχεία έχουν μετατραπεί σε kebab-case.");
