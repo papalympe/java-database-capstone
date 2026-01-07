@@ -1,8 +1,7 @@
-// convert-to-kebab.js
 const fs = require("fs");
 const path = require("path");
 
-// Root φάκελος project
+// Root project folder
 const rootDir = path.resolve(__dirname, ".");
 
 // CamelCase → kebab-case
@@ -10,8 +9,8 @@ function camelToKebab(str) {
   return str.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
 }
 
-// Παίρνει όλα τα αρχεία με συγκεκριμένα extensions
-function getFiles(dir, exts = [".css"]) {
+// Get all CSS files
+function getCSSFiles(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
 
@@ -20,45 +19,73 @@ function getFiles(dir, exts = [".css"]) {
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
-      results = results.concat(getFiles(filePath, exts));
-    } else {
-      if (exts.includes(path.extname(file))) {
-        results.push(filePath);
-      }
+      results = results.concat(getCSSFiles(filePath));
+    } else if (path.extname(file) === ".css") {
+      results.push(filePath);
     }
   });
 
   return results;
 }
 
-// Επεξεργασία CSS αρχείου
-function processFile(filePath) {
-  let content = fs.readFileSync(filePath, "utf-8");
-
-  // IDs & classes
+// Fix CSS content
+function fixCSSContent(content) {
+  // 1. CamelCase → kebab-case
   content = content.replace(
     /([#.]?)([a-zA-Z][a-zA-Z0-9]*[A-Z][a-zA-Z0-9]*)/g,
     (_, prefix, name) => prefix + camelToKebab(name)
   );
 
-  // @keyframes
   content = content.replace(
     /@keyframes\s+([a-zA-Z][a-zA-Z0-9]*)/g,
     (_, name) => `@keyframes ${camelToKebab(name)}`
   );
 
-  // animation-name property
   content = content.replace(
     /animation\s*:\s*([a-zA-Z][a-zA-Z0-9]*)/g,
     (_, name) => `animation: ${camelToKebab(name)}`
   );
 
-  fs.writeFileSync(filePath, content, "utf-8");
+  // 2. Add fallback generic font if missing
+  content = content.replace(
+    /font-family\s*:\s*([^;]+);/g,
+    (_, fonts) => {
+      if (!fonts.includes("sans-serif") && !fonts.includes("serif")) {
+        return `font-family: ${fonts.trim()}, sans-serif;`;
+      }
+      return _;
+    }
+  );
+
+  // 3. Fix transform properties
+  content = content.replace(/transform\s*:\s*translate-x/gi, "transform: translateX");
+  content = content.replace(/transform\s*:\s*translate-y/gi, "transform: translateY");
+
+  // 4. Split multiple declarations in a single line
+  content = content.replace(/;\s*(?=[^{}\n]*;)/g, ";\n  ");
+
+  // 5. Remove duplicate selectors (keep first occurrence)
+  const selectors = new Set();
+  content = content.replace(/([^{]+){[^}]*}/g, (match, selector) => {
+    const sel = selector.trim();
+    if (selectors.has(sel)) return ""; // remove duplicate
+    selectors.add(sel);
+    return match;
+  });
+
+  return content;
+}
+
+// Process each CSS file
+function processFile(filePath) {
+  let content = fs.readFileSync(filePath, "utf-8");
+  const fixedContent = fixCSSContent(content);
+  fs.writeFileSync(filePath, fixedContent, "utf-8");
   console.log("Updated:", filePath);
 }
 
-// Εκτέλεση μόνο σε CSS αρχεία
-const cssFiles = getFiles(rootDir, [".css"]);
+// Run
+const cssFiles = getCSSFiles(rootDir);
 cssFiles.forEach(processFile);
 
-console.log("✅ Όλα τα CSS αρχεία έχουν μετατραπεί σε kebab-case.");
+console.log("✅ Όλα τα CSS αρχεία έχουν μετατραπεί και επιδιορθωθεί για Stylelint.");
