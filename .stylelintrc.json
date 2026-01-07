@@ -3,6 +3,11 @@
   "rules": {
     "indentation": 2,
     "string-quotes": "double",
-    "color-no-invalid-hex": true
+    "color-no-invalid-hex": true,
+    "font-family-no-missing-generic-family-keyword": true,
+    "selector-class-pattern": "^[a-z0-9-]+$",
+    "selector-id-pattern": "^[a-z0-9-]+$",
+    "keyframes-name-pattern": "^[a-z0-9-]+$",
+    "declaration-block-single-line-max-declarations": 1
   }
 }
