@@ -1,8 +1,6 @@
 name: Lint Frontend
 
-on:
-  push:
-  pull_request:
+on: [push, pull_request]
 
 jobs:
   lint-frontend:
@@ -20,10 +18,10 @@ jobs:
         run: npm install -g htmlhint stylelint eslint
 
       - name: Lint HTML
-        run: htmlhint "java-database-capstone/app/src/main/resources/static/pages/**/*.html" || true
+        run: htmlhint "app/src/main/resources/static/pages/**/*.html" || true
 
       - name: Lint CSS
-        run: stylelint "java-database-capstone/app/src/main/resources/static/assets/css/**/*.css" || true
+        run: stylelint "app/src/main/resources/static/assets/css/**/*.css" || true
 
       - name: Lint JS
-        run: eslint "java-database-capstone/app/src/main/resources/static/js/**/*.js" || true
+        run: eslint -c eslint.config.js "app/src/main/resources/static/js/**/*.js" || true
