@@ -35,4 +35,4 @@ cfg.rules["no-descending-specificity"] = null;
 // cfg.rules["selector-id-pattern"] = null;
 
 fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2), "utf8");
-console.log("Updated .stylelintrc.json (χωρίς backup).");
+console.log("Updated .stylelintrc.json.");
