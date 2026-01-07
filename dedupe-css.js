@@ -1,18 +1,37 @@
 const fs = require("fs");
 const path = require("path");
-const fg = require("fast-glob");
 
 /**
- * Αφαιρεί duplicate selectors κρατώντας το ΠΡΩΤΟ block
- * Λειτουργεί μόνο σε .css αρχεία
+ * Αφαιρεί duplicate CSS selectors
+ * Κρατάει ΠΑΝΤΑ το πρώτο block
+ * Δεν δημιουργεί backup
  */
 
-const CSS_GLOB = "app/src/main/resources/static/assets/css/**/*.css";
+const ROOT_DIR = path.join(
+  __dirname,
+  "app/src/main/resources/static/assets/css"
+);
+
+function getCssFiles(dir) {
+  let results = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results = results.concat(getCssFiles(fullPath));
+    } else if (entry.name.endsWith(".css")) {
+      results.push(fullPath);
+    }
+  }
+
+  return results;
+}
 
 function dedupeCssFile(filePath) {
   const content = fs.readFileSync(filePath, "utf8");
-
   const lines = content.split("\n");
+
   const seen = new Set();
   const output = [];
 
@@ -51,8 +70,8 @@ function dedupeCssFile(filePath) {
   console.log("✔ Deduped:", filePath);
 }
 
-const files = fg.sync(CSS_GLOB);
-
+// RUN
+const files = getCssFiles(ROOT_DIR);
 files.forEach(dedupeCssFile);
 
-console.log("\n✅ CSS duplicate selectors removed successfully.");
+console.log("\n✅ Duplicate CSS selectors removed successfully.");
