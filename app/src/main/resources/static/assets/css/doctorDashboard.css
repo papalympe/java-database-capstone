@@ -37,9 +37,7 @@ html, body {
   background-attachment: fixed;
 }
 
-
 /* 3. SEARCH & FILTER STYLING */
-/* Support both class names admin used (.search-input) and local .searchBar */
 .search-input,
 .searchBar {
   width: 340px;
@@ -49,7 +47,7 @@ html, body {
   border: 1px solid #ccc;
   font-size: 16px;
   outline: none;
-  background: rgba(255,255,255,0.95); /* make input readable over bg */
+  background: rgba(255,255,255,0.95);
 }
 
 .search-input:focus,
@@ -58,7 +56,6 @@ html, body {
   box-shadow: 0 0 5px rgba(1,92,93,0.25);
 }
 
-/* Filters area */
 .filters {
   display: flex;
   align-items: center;
@@ -66,7 +63,6 @@ html, body {
   gap: 10px;
 }
 
-/* Ensure adminBtn style (global) applies but we tighten appearance for doctor */
 .adminBtn,
 .today-btn {
   display: inline-flex; 
@@ -87,7 +83,7 @@ html, body {
   transform: translateY(-1px);
 }
 
-/* date picker (matching JS class .datePicker) */
+/* date picker */
 .datePicker,
 .date-picker,
 .date-picker input {
@@ -103,10 +99,11 @@ html, body {
 /* 4. TABLE STYLING */
 .patient-table {
   width: 100%;
+  max-width: 1100px;
   border-collapse: collapse;
   font-family: sans-serif;
   margin-top: 20px;
-  background: rgba(255,255,255,0.9); /* keep table readable above bg */
+  background: rgba(255,255,255,0.95);
   border-radius: 8px;
   overflow: hidden;
 }
@@ -118,9 +115,11 @@ html, body {
 
 .patient-table th,
 .patient-table td {
-  padding: 12px 16px;
+  padding: 12px 18px;
   text-align: center;
+  vertical-align: middle;
   border-bottom: 1px solid #ddd;
+  white-space: nowrap;
 }
 
 .patient-table tbody tr:nth-child(even) {
@@ -161,7 +160,6 @@ html, body {
   font-size: 24px;
   color: #015c5d;
   margin-bottom: 30px;
-  margin-right: 0;
 }
 
 /* 8. RESPONSIVE DESIGN */
@@ -184,83 +182,52 @@ html, body {
   .table-header {
     font-size: 20px;
   }  
-   
 }
 
 /* =========================
-   Fixes: footer stick + today button + table stretch
-   (TO BE OUTSIDE any @media block)
-   ========================= */
+   FIXES: footer, today button, table stretch
+========================= */
 
-/* 1) Ensure the page wrapper pushes footer to the bottom */
-.wrapper {
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 100vh !important;
-}
-
-/* Make footer sit after content (sticky to bottom of viewport when content short) */
+/* Make footer sit after content */
 .footer {
-  margin-top: auto !important;
-  position: relative !important;
+  margin-top: auto;
+  position: relative;
   bottom: 0;
-  color: #0a0a23 !important;
-  background-color: #f4f4f4 !important;
-  padding: 24px 20px !important;
-  border-top: 1px solid #e0e0e0 !important;
+  color: #0a0a23;
+  background-color: #f4f4f4;
+  padding: 24px 20px;
+  border-top: 1px solid #e0e0e0;
 }
 
-/* Footer internal layout safe-guards */
 .footer-container {
-  align-items: flex-start !important;
-  justify-content: space-between !important;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
 }
 
-/* 2) Today button styling override (εξασφαλίζει ότι το κείμενο μένει ΜΕΣΑ) */
 .filters .adminBtn#todayButton,
 .filters .adminBtn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  white-space: nowrap !important;
-  width: auto !important;
-  min-width: 150px !important;
-  padding: 10px 18px !important;
-  line-height: 1 !important;
-  box-sizing: border-box !important;
-  overflow: visible !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  width: auto;
+  min-width: 150px;
+  padding: 10px 18px;
+  line-height: 1;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
-/* If some global rule forces button width, this will neutralize it */
-button[style], .adminBtn[style] { width: auto !important; }
+button[style], .adminBtn[style] { width: auto; }
 
-/* 3) Ensure patient-table has room to show columns nicely */
-.patient-table {
-  width: 100% !important;
-  max-width: 1100px !important;  /* περιορίζει το πολύ μεγάλο stretch */
-  margin: 0 auto !important;     /* κεντράρει και αφήνει τις στήλες να 'αναπνεύσουν' */
-  border-collapse: collapse !important;
-  overflow: hidden !important;
-  background: rgba(255,255,255,0.95) !important;
-  border-radius: 8px !important;
-}
-
-.patient-table thead th,
-.patient-table tbody td {
-  padding: 12px 18px !important;
-  text-align: center !important;
-  vertical-align: middle !important;
-  white-space: nowrap !important; /* κρατά τον κάθε header/τιμή σε μία γραμμή */
-}
-
-/* 4) Small visual niceties */
+/* Small visual niceties for table header */
 .patient-table thead th {
   font-weight: 600;
   letter-spacing: 0.2px;
 }
 
-/* 5) Defensive: αν παλι υπάρχει λευκό κείμενο στο footer */
+/* Defensive: footer color */
 .footer, .footer * {
-  color: #0a0a23 !important;
+  color: #0a0a23;
 }
-
