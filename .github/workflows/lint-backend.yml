@@ -39,7 +39,7 @@ jobs:
 
           if [ -d "$TARGET_DIR" ]; then
             echo "Running Checkstyle against $TARGET_DIR"
-            java -jar "$CHECKSTYLE_JAR" -c tools/google_checks.xml -r "$TARGET_DIR"
+            java -jar "$CHECKSTYLE_JAR" -c tools/google_checks.xml "$TARGET_DIR"
           else
             echo "Target directory $TARGET_DIR not found; skipping Checkstyle run"
           fi
