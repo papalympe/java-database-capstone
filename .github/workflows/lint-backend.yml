@@ -1,6 +1,8 @@
 name: Lint Java Backend
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   lint-java:
@@ -20,26 +22,40 @@ jobs:
 
       - name: Download Checkstyle (standalone jar)
         run: |
-          # Set a Checkstyle version to download; change if you want a specific release
           CHECKSTYLE_VERSION=10.12.3
           curl -sSL -o tools/checkstyle-${CHECKSTYLE_VERSION}-all.jar \
             "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${CHECKSTYLE_VERSION}/checkstyle-${CHECKSTYLE_VERSION}-all.jar"
 
-      - name: Download google_checks.xml ruleset
+      - name: Extract google_checks.xml from Checkstyle jar (match versions)
         run: |
-          # Download the default Google ruleset (you can replace with a customized config later)
-          curl -sSL -o tools/google_checks.xml \
-            https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml
+          CHECKSTYLE_JAR=tools/checkstyle-10.12.3-all.jar
+          mkdir -p tools
+          # try common paths inside jar
+          if jar tf "$CHECKSTYLE_JAR" | grep -q "src/main/resources/google_checks.xml"; then
+            unzip -p "$CHECKSTYLE_JAR" "src/main/resources/google_checks.xml" > tools/google_checks.xml
+          elif jar tf "$CHECKSTYLE_JAR" | grep -q "google_checks.xml"; then
+            unzip -p "$CHECKSTYLE_JAR" "google_checks.xml" > tools/google_checks.xml
+          else
+            echo "google_checks.xml not found inside jar; falling back to remote download"
+            curl -sSL -o tools/google_checks.xml \
+              "https://raw.githubusercontent.com/checkstyle/checkstyle/checkstyle-10.12.3/src/main/resources/google_checks.xml"
+          fi
 
       - name: Run Checkstyle on back-end Java sources
         run: |
-          # Path to the downloaded jar (use the same version variable as above)
           CHECKSTYLE_JAR=tools/checkstyle-10.12.3-all.jar
           TARGET_DIR=app/src/main/java/com/project/back_end
 
           if [ -d "$TARGET_DIR" ]; then
             echo "Running Checkstyle against $TARGET_DIR"
-            java -jar "$CHECKSTYLE_JAR" -c tools/google_checks.xml "$TARGET_DIR"
+            # produce XML report; step fails if violations found
+            java -jar "$CHECKSTYLE_JAR" -c tools/google_checks.xml -f xml -o tools/checkstyle-report.xml "$TARGET_DIR"
           else
             echo "Target directory $TARGET_DIR not found; skipping Checkstyle run"
           fi
+
+      - name: Upload Checkstyle report
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-report
+          path: tools/checkstyle-report.xml
