@@ -20,4 +20,4 @@ jobs:
 
       - name: Run Checkstyle
         run: |
-          java -jar checkstyle.jar -c /google_checks.xml app/src/main/java/com/project/back_end || true
+          java -jar checkstyle.jar -c google_checks.xml app/src/main/java/com/project/back_end
