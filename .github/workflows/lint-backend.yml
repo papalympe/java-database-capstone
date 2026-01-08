@@ -18,8 +18,8 @@ jobs:
       - name: Download Checkstyle
         run: curl -L -o checkstyle.jar https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.1/checkstyle-10.12.1-all.jar
 
-      - name: Download config
-        run: curl -L -o google_checks.xml https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml
+      - name: Download Checkstyle config
+        run: curl -fL -o google_checks.xml https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.1/google_checks.xml
 
       - name: Run Checkstyle
         run: |
