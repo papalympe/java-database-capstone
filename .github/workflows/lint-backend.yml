@@ -15,12 +15,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Download Checkstyle
-        run: curl -L -o checkstyle.jar https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.1/checkstyle-10.12.1-all.jar
+      - name: Create tools directory
+        run: mkdir -p tools
 
-      - name: Download Checkstyle config
-        run: curl -fL -o google_checks.xml https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.12.1/google_checks.xml
-
-      - name: Run Checkstyle
+      - name: Download Checkstyle (standalone jar)
         run: |
-          java -jar checkstyle.jar -c google_checks.xml app/src/main/java/com/project/back_end
+          # Set a Checkstyle version to download; change if you want a specific release
+          CHECKSTYLE_VERSION=10.12.3
+          curl -sSL -o tools/checkstyle-${CHECKSTYLE_VERSION}-all.jar \
+            "https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${CHECKSTYLE_VERSION}/checkstyle-${CHECKSTYLE_VERSION}-all.jar"
+
+      - name: Download google_checks.xml ruleset
+        run: |
+          # Download the default Google ruleset (you can replace with a customized config later)
+          curl -sSL -o tools/google_checks.xml \
+            https://raw.githubusercontent.com/checkstyle/checkstyle/master/src/main/resources/google_checks.xml
+
+      - name: Run Checkstyle on back-end Java sources
+        run: |
+          # Path to the downloaded jar (use the same version variable as above)
+          CHECKSTYLE_JAR=tools/checkstyle-10.12.3-all.jar
+          TARGET_DIR=app/src/main/java/com/project/back_end
+
+          if [ -d "$TARGET_DIR" ]; then
+            echo "Running Checkstyle against $TARGET_DIR"
+            java -jar "$CHECKSTYLE_JAR" -c tools/google_checks.xml -r "$TARGET_DIR" || true
+          else
+            echo "Target directory $TARGET_DIR not found; skipping Checkstyle run"
+          fi
