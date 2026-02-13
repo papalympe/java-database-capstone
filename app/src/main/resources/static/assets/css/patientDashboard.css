@@ -286,14 +286,17 @@ html, body {
   background: transparent !important;
 }
 
+#header button.adminBtn,
 #header .adminBtn {
-  background-color: #015c5d;
-  color: #fff;
-  border-radius: 8px;
-  transition: background 0.2s ease, transform 0.08s ease;
+  background-color: #015c5d !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  transition: background 0.2s ease, transform 0.08s ease !important;
 }
 
+#header button.adminBtn:hover,
 #header .adminBtn:hover {
-  background-color: #017d7e;
-  transform: translateY(-1px);
+  background-color: #017d7e !important;
+  transform: translateY(-1px) !important;
 }
