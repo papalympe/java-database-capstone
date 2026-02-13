@@ -286,21 +286,14 @@ html, body {
   background: transparent !important;
 }
 
-body.logged-patient #header .adminBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  min-width: 150px;
+#header .adminBtn {
   background-color: #015c5d;
-  color: #ffffff;
-  border: none;
+  color: #fff;
   border-radius: 8px;
-  cursor: pointer;
   transition: background 0.2s ease, transform 0.08s ease;
 }
 
-body.logged-patient #header .adminBtn:hover {
+#header .adminBtn:hover {
   background-color: #017d7e;
   transform: translateY(-1px);
 }
