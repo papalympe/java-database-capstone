@@ -8,13 +8,64 @@
     <link rel = "stylesheet" href = "../assets/css/adminDashboard.css">
     <link rel = "stylesheet" href = "../assets/css/style.css">
     <link rel = "stylesheet" href = "../assets/css/patientDashboard.css">
+
+    <!-- INLINE OVERRIDES: only for loggedPatientDashboard.html -->
+    <style>
+      /* Scope to this page's body class + header to avoid global side-effects */
+      body.logged-patient #header .adminBtn,
+      body.logged-patient #header button#homeBtn,
+      body.logged-patient #header button#patientAppointments {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 14px;
+        min-width: 110px;
+        background-color: #015c5d !important; /* same default color */
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        transition: background 0.2s ease, transform 0.08s ease !important;
+        box-sizing: border-box;
+      }
+
+      /* Exact hover effect as in patientAppointments (doctorDashboard.css) */
+      body.logged-patient #header .adminBtn:hover,
+      body.logged-patient #header button#homeBtn:hover,
+      body.logged-patient #header button#patientAppointments:hover {
+        background-color: #017d7e !important;
+        transform: translateY(-1px) !important;
+      }
+
+      /* Logout link styling kept neutral but matching hover */
+      body.logged-patient #header a#logoutLink {
+        margin-left: 12px;
+        color: #015c5d !important;
+        text-decoration: none !important;
+        font-weight: 600;
+      }
+      body.logged-patient #header a#logoutLink:hover {
+        color: #017d7e !important;
+      }
+
+      /* Accessibility focus */
+      body.logged-patient #header .adminBtn:focus,
+      body.logged-patient #header button#homeBtn:focus,
+      body.logged-patient #header button#patientAppointments:focus {
+        outline: 3px solid rgba(1,125,126,0.18);
+        outline-offset: 2px;
+      }
+    </style>
+    
     <script src = "../js/render.js" defer></script>
     <script src = "../js/util.js" defer></script>
     <script src = "../js/components/header.js" defer></script>
     <script src = "../js/components/footer.js" defer></script>
     <script type = "module" src = "../js/loggedPatient.js" defer></script>
 </head>
-<body onload="renderContent()">
+<body onload="renderContent()" class="logged-patient">
     <div class="container">
         <div class="wrapper">
             <div id="header"></div>
