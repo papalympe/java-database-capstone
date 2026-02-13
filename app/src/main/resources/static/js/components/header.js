@@ -30,7 +30,7 @@
     const token = localStorage.getItem("token");
 
     // If role is set but token missing, show minimal header (don't redirect)
-    if ((role === "loggedPatient" || role === "admin" || role === "doctor") && !token) {
+    if ((role === "loggedPatient" || role === "admin" || role === "doctor" || role === "patient") && !token) {
       console.warn("header: role present but token missing:", role);
       headerDiv.innerHTML = `
         <header class="header">
@@ -157,6 +157,8 @@
   function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userRole");
+    // keep consistent keys used elsewhere: also remove 'role' if present
+    localStorage.removeItem("role");
     window.location.href = "/";
   }
 
@@ -173,13 +175,21 @@
   // Initialize header rendering on DOMContentLoaded
   document.addEventListener("DOMContentLoaded", renderHeader);
 
-  // Apply role-based background class safely
+  // Apply role-based background class safely and add logged-patient class
   document.addEventListener("DOMContentLoaded", () => {
     const role = localStorage.getItem("userRole") || localStorage.getItem("role");
+
     if (role === "admin" || role === "doctor" || role === "patient") {
       document.body.classList.add("role-bg");
     } else {
       document.body.classList.remove("role-bg");
+    }
+
+    // Add explicit class for loggedPatient so we can scope CSS
+    if (role === "loggedPatient") {
+      document.body.classList.add("logged-patient");
+    } else {
+      document.body.classList.remove("logged-patient");
     }
   });
 
